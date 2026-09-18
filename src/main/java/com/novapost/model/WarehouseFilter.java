@@ -24,6 +24,10 @@ public record WarehouseFilter(
 		return new WarehouseFilter(cityRef, null, null, null, null, null, page, limit, null);
 	}
 
+	public static WarehouseFilter byCityName(String cityName, int page, int limit){
+		return new WarehouseFilter(null, cityName, null, null, null, null, page, limit, null);
+	}
+
 	public static WarehouseFilter bySettlementRef(String settlementRef){
 		return new WarehouseFilter(null, null, settlementRef, null, null, null, null, null, null);
 	}
