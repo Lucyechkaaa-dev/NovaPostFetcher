@@ -1,13 +1,19 @@
 package com.novapost.db;
 
+import com.novapost.model.InternetDocumentListItem;
 import com.novapost.model.Settlement;
 import com.novapost.model.Warehouse;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class DatabaseManager{
 
@@ -80,6 +86,29 @@ public class DatabaseManager{
 					        INDEX idx_wh_city_desc (city_description)
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 					""");
+
+			stmt.execute("""
+					    CREATE TABLE IF NOT EXISTS nova_post_internet_documents (
+					        ref VARCHAR(36) PRIMARY KEY,
+					        int_doc_number VARCHAR(32) NOT NULL,
+					        date_time DATETIME,
+					        cost VARCHAR(32),
+					        weight VARCHAR(32),
+					        seats_amount VARCHAR(32),
+					        city_sender VARCHAR(36),
+					        city_recipient VARCHAR(36),
+					        sender_description VARCHAR(255),
+					        recipient_description VARCHAR(255),
+					        city_sender_description VARCHAR(128),
+					        city_recipient_description VARCHAR(128),
+					        state_name VARCHAR(128),
+					        estimated_delivery_date DATETIME,
+					        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					        INDEX idx_doc_number (int_doc_number),
+					        INDEX idx_doc_date_time (date_time),
+					        INDEX idx_doc_state (state_name)
+					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+					""");
 		}
 	}
 
@@ -89,7 +118,21 @@ public class DatabaseManager{
 			stmt.execute("SET FOREIGN_KEY_CHECKS = 0;");
 			stmt.execute("TRUNCATE TABLE nova_post_warehouses;");
 			stmt.execute("TRUNCATE TABLE nova_post_settlements;");
+			stmt.execute("TRUNCATE TABLE nova_post_internet_documents;");
 			stmt.execute("SET FOREIGN_KEY_CHECKS = 1;");
+		}
+	}
+
+	public void truncateTable(String tableName) throws SQLException{
+		if(tableName == null || tableName.isBlank()){
+			return;
+		}
+		if(!List.of("nova_post_warehouses", "nova_post_settlements", "nova_post_internet_documents").contains(tableName)){
+			throw new IllegalArgumentException("Unknown table name: " + tableName);
+		}
+		try(Connection conn = getConnection();
+		    Statement stmt = conn.createStatement()){
+			stmt.execute("TRUNCATE TABLE " + tableName + ";");
 		}
 	}
 
@@ -221,6 +264,291 @@ public class DatabaseManager{
 			conn.commit();
 			return results.length;
 		}
+	}
+
+	public int insertInternetDocuments(List<InternetDocumentListItem> documents) throws SQLException{
+		if(documents == null || documents.isEmpty()){
+			return 0;
+		}
+
+		String sql = """
+				    INSERT INTO nova_post_internet_documents (
+				        ref, int_doc_number, date_time, cost, weight, seats_amount,
+				        city_sender, city_recipient, sender_description, recipient_description,
+				        city_sender_description, city_recipient_description, state_name,
+				        estimated_delivery_date
+				    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				    ON DUPLICATE KEY UPDATE
+				        int_doc_number = VALUES(int_doc_number),
+				        date_time = VALUES(date_time),
+				        cost = VALUES(cost),
+				        weight = VALUES(weight),
+				        seats_amount = VALUES(seats_amount),
+				        city_sender = VALUES(city_sender),
+				        city_recipient = VALUES(city_recipient),
+				        sender_description = VALUES(sender_description),
+				        recipient_description = VALUES(recipient_description),
+				        city_sender_description = VALUES(city_sender_description),
+				        city_recipient_description = VALUES(city_recipient_description),
+				        state_name = VALUES(state_name),
+				        estimated_delivery_date = VALUES(estimated_delivery_date);
+				""";
+
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+
+			conn.setAutoCommit(false);
+			for(InternetDocumentListItem doc : documents){
+				ps.setString(1, doc.ref());
+				ps.setString(2, doc.intDocNumber());
+				ps.setTimestamp(3, doc.dateTime() != null ? Timestamp.valueOf(doc.dateTime()) : null);
+				ps.setString(4, doc.cost());
+				ps.setString(5, doc.weight());
+				ps.setString(6, doc.seatsAmount());
+				ps.setString(7, doc.citySender());
+				ps.setString(8, doc.cityRecipient());
+				ps.setString(9, doc.senderDescription());
+				ps.setString(10, doc.recipientDescription());
+				ps.setString(11, doc.citySenderDescription());
+				ps.setString(12, doc.cityRecipientDescription());
+				ps.setString(13, doc.stateName());
+				ps.setTimestamp(14, doc.estimatedDeliveryDate() != null ? Timestamp.valueOf(doc.estimatedDeliveryDate()) : null);
+				ps.addBatch();
+			}
+
+			int[] results = ps.executeBatch();
+			conn.commit();
+			return results.length;
+		}
+	}
+
+	public Optional<Settlement> findSettlementByRef(String ref) throws SQLException{
+		if(ref == null || ref.isBlank()){
+			return Optional.empty();
+		}
+		String sql = "SELECT * FROM nova_post_settlements WHERE ref = ?";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, ref);
+			try(ResultSet rs = ps.executeQuery()){
+				if(rs.next()){
+					return Optional.of(mapSettlement(rs));
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	public List<Settlement> searchSettlementsByName(String namePrefix, int limit) throws SQLException{
+		if(namePrefix == null || namePrefix.isBlank()){
+			return List.of();
+		}
+		int safeLimit = Math.max(1, Math.min(limit, 1000));
+		String sql = "SELECT * FROM nova_post_settlements WHERE description LIKE ? LIMIT ?";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, namePrefix + "%");
+			ps.setInt(2, safeLimit);
+			try(ResultSet rs = ps.executeQuery()){
+				List<Settlement> list = new ArrayList<>();
+				while(rs.next()){
+					list.add(mapSettlement(rs));
+				}
+				return list;
+			}
+		}
+	}
+
+	public Optional<Warehouse> findWarehouseByRef(String ref) throws SQLException{
+		if(ref == null || ref.isBlank()){
+			return Optional.empty();
+		}
+		String sql = "SELECT * FROM nova_post_warehouses WHERE ref = ?";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, ref);
+			try(ResultSet rs = ps.executeQuery()){
+				if(rs.next()){
+					return Optional.of(mapWarehouse(rs));
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	public List<Warehouse> findWarehousesBySettlement(String settlementRef) throws SQLException{
+		if(settlementRef == null || settlementRef.isBlank()){
+			return List.of();
+		}
+		String sql = "SELECT * FROM nova_post_warehouses WHERE settlement_ref = ? ORDER BY CAST(number AS UNSIGNED), number";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, settlementRef);
+			try(ResultSet rs = ps.executeQuery()){
+				List<Warehouse> list = new ArrayList<>();
+				while(rs.next()){
+					list.add(mapWarehouse(rs));
+				}
+				return list;
+			}
+		}
+	}
+
+	public List<Warehouse> findWarehousesByCity(String cityRef) throws SQLException{
+		if(cityRef == null || cityRef.isBlank()){
+			return List.of();
+		}
+		String sql = "SELECT * FROM nova_post_warehouses WHERE city_ref = ? ORDER BY CAST(number AS UNSIGNED), number";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, cityRef);
+			try(ResultSet rs = ps.executeQuery()){
+				List<Warehouse> list = new ArrayList<>();
+				while(rs.next()){
+					list.add(mapWarehouse(rs));
+				}
+				return list;
+			}
+		}
+	}
+
+	public Optional<InternetDocumentListItem> findInternetDocumentByNumber(String intDocNumber) throws SQLException{
+		if(intDocNumber == null || intDocNumber.isBlank()){
+			return Optional.empty();
+		}
+		String sql = "SELECT * FROM nova_post_internet_documents WHERE int_doc_number = ?";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, intDocNumber);
+			try(ResultSet rs = ps.executeQuery()){
+				if(rs.next()){
+					return Optional.of(mapInternetDocument(rs));
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	public Optional<InternetDocumentListItem> findInternetDocumentByRef(String ref) throws SQLException{
+		if(ref == null || ref.isBlank()){
+			return Optional.empty();
+		}
+		String sql = "SELECT * FROM nova_post_internet_documents WHERE ref = ?";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, ref);
+			try(ResultSet rs = ps.executeQuery()){
+				if(rs.next()){
+					return Optional.of(mapInternetDocument(rs));
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	public List<InternetDocumentListItem> findInternetDocumentsByDateRange(LocalDateTime from, LocalDateTime to) throws SQLException{
+		if(from == null || to == null){
+			return List.of();
+		}
+		String sql = "SELECT * FROM nova_post_internet_documents WHERE date_time >= ? AND date_time <= ? ORDER BY date_time DESC";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setTimestamp(1, Timestamp.valueOf(from));
+			ps.setTimestamp(2, Timestamp.valueOf(to));
+			try(ResultSet rs = ps.executeQuery()){
+				List<InternetDocumentListItem> list = new ArrayList<>();
+				while(rs.next()){
+					list.add(mapInternetDocument(rs));
+				}
+				return list;
+			}
+		}
+	}
+
+	private Settlement mapSettlement(ResultSet rs) throws SQLException{
+		return new Settlement(
+				rs.getString("ref"),
+				rs.getString("settlement_type"),
+				rs.getString("latitude"),
+				rs.getString("longitude"),
+				rs.getString("description"),
+				rs.getString("description_ru"),
+				rs.getString("settlement_type_description"),
+				null,
+				rs.getString("region"),
+				rs.getString("regions_description"),
+				null,
+				rs.getString("area"),
+				rs.getString("area_description"),
+				null,
+				rs.getString("index1"),
+				rs.getString("index2"),
+				rs.getString("index_coatsu1"),
+				rs.getString("warehouse_flag")
+		);
+	}
+
+	private Warehouse mapWarehouse(ResultSet rs) throws SQLException{
+		return new Warehouse(
+				rs.getString("site_key"),
+				rs.getString("description"),
+				null,
+				rs.getString("short_address"),
+				null,
+				rs.getString("phone"),
+				rs.getString("type_of_warehouse"),
+				rs.getString("ref"),
+				rs.getString("number"),
+				rs.getString("city_ref"),
+				rs.getString("city_description"),
+				null,
+				rs.getString("settlement_ref"),
+				rs.getString("settlement_description"),
+				rs.getString("settlement_area_description"),
+				rs.getString("settlement_regions_description"),
+				null,
+				rs.getString("longitude"),
+				rs.getString("latitude"),
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				rs.getString("total_max_weight_allowed"),
+				rs.getString("place_max_weight_allowed"),
+				rs.getString("warehouse_status"),
+				null,
+				rs.getString("category_of_warehouse"),
+				null,
+				rs.getString("direct"),
+				rs.getString("district_code"),
+				rs.getString("warehouse_index"),
+				null,
+				null,
+				null
+		);
+	}
+
+	private InternetDocumentListItem mapInternetDocument(ResultSet rs) throws SQLException{
+		Timestamp dt = rs.getTimestamp("date_time");
+		Timestamp edd = rs.getTimestamp("estimated_delivery_date");
+		return new InternetDocumentListItem(
+				rs.getString("ref"),
+				rs.getString("int_doc_number"),
+				dt != null ? dt.toLocalDateTime() : null,
+				rs.getString("cost"),
+				rs.getString("weight"),
+				rs.getString("seats_amount"),
+				rs.getString("city_sender"),
+				rs.getString("city_recipient"),
+				rs.getString("sender_description"),
+				rs.getString("recipient_description"),
+				rs.getString("city_recipient_description"),
+				rs.getString("city_sender_description"),
+				rs.getString("state_name"),
+				edd != null ? edd.toLocalDateTime() : null
+		);
 	}
 
 	public DatabaseConfig getDatabaseConfig(){

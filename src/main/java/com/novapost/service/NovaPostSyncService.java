@@ -6,12 +6,14 @@ import com.novapost.model.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 
 public class NovaPostSyncService{
 
 	private static final int SETTLEMENT_PAGE_LIMIT = 150;
 	private static final int WAREHOUSE_PAGE_LIMIT = 500;
+	private static final int DOCUMENT_PAGE_LIMIT = 100;
 
 	private final NovaPostClient client;
 	private final DatabaseManager databaseManager;
@@ -28,17 +30,25 @@ public class NovaPostSyncService{
 	}
 
 	public SyncResult syncAll() throws SQLException, IOException, InterruptedException{
+		return syncAll(0);
+	}
+
+	public SyncResult syncAll(int documentDaysBack) throws SQLException, IOException, InterruptedException{
 		System.out.println("Starting database initialization and table setup...");
 		databaseManager.initializeTables();
 
-		System.out.println("Truncating tables (nova_post_settlements, nova_post_warehouses)...");
+		System.out.println("Truncating tables (nova_post_settlements, nova_post_warehouses, nova_post_internet_documents)...");
 		databaseManager.truncateTables();
 
 		int totalSettlements = syncSettlements();
 		int totalWarehouses = syncWarehouses();
+		int totalDocs = 0;
+		if(documentDaysBack > 0){
+			totalDocs = syncInternetDocuments(documentDaysBack);
+		}
 
-		System.out.println("Sync finished successfully. Settlements: " + totalSettlements + ", Warehouses: " + totalWarehouses);
-		return new SyncResult(totalSettlements, totalWarehouses);
+		System.out.println("Sync finished successfully. Settlements: " + totalSettlements + ", Warehouses: " + totalWarehouses + ", Documents: " + totalDocs);
+		return new SyncResult(totalSettlements, totalWarehouses, totalDocs);
 	}
 
 	public int syncSettlements() throws IOException, InterruptedException, SQLException{
@@ -109,7 +119,49 @@ public class NovaPostSyncService{
 		return totalInserted;
 	}
 
-	public record SyncResult(int settlementsCount, int warehousesCount){
+	public int syncInternetDocuments(LocalDate from, LocalDate to) throws IOException, InterruptedException, SQLException{
+		System.out.println("Fetching internet documents (waybills) from Nova Post API...");
+		int page = 1;
+		int totalInserted = 0;
 
+		while(true){
+			InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, DOCUMENT_PAGE_LIMIT);
+			NpResponse<InternetDocumentListItem> response = client.getInternetDocumentList(filter);
+
+			if(response.hasErrors()){
+				throw new IOException("API error fetching internet documents at page " + page + ": " + response.errors());
+			}
+
+			List<InternetDocumentListItem> list = response.data();
+			if(list == null || list.isEmpty()){
+				break;
+			}
+
+			int inserted = databaseManager.insertInternetDocuments(list);
+			totalInserted += inserted;
+			System.out.println("Internet documents page " + page + " inserted: " + inserted + " (total so far: " + totalInserted + ")");
+
+			if(list.size() < DOCUMENT_PAGE_LIMIT){
+				break;
+			}
+			page++;
+			if(pageDelayMs > 0){
+				Thread.sleep(pageDelayMs);
+			}
+		}
+
+		return totalInserted;
+	}
+
+	public int syncInternetDocuments(int daysBack) throws IOException, InterruptedException, SQLException{
+		LocalDate to = LocalDate.now();
+		LocalDate from = to.minusDays(Math.max(0, daysBack));
+		return syncInternetDocuments(from, to);
+	}
+
+	public record SyncResult(int settlementsCount, int warehousesCount, int internetDocumentsCount){
+		public SyncResult(int settlementsCount, int warehousesCount){
+			this(settlementsCount, warehousesCount, 0);
+		}
 	}
 }
