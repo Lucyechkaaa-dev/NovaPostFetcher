@@ -14,120 +14,150 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
 
-public class NovaPostClient {
-    public static final String DEFAULT_API_URL = "https://api.novaposhta.ua/v2.0/json/";
-    private static final String MODEL_ADDRESS_GENERAL = "AddressGeneral";
-    private static final String MODEL_ADDRESS = "Address";
+public class NovaPostClient{
 
-    private final String apiKey;
-    private final String apiUrl;
-    private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
+	public static final String DEFAULT_API_URL = "https://api.novaposhta.ua/v2.0/json/";
+	private static final String MODEL_ADDRESS_GENERAL = "AddressGeneral";
+	private static final String MODEL_ADDRESS = "Address";
+	private static final String MODEL_INTERNET_DOCUMENT = "InternetDocument";
 
-    public NovaPostClient(String apiKey) {
-        this(apiKey, DEFAULT_API_URL, HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(15))
-                .build(), createDefaultMapper());
-    }
+	private final String apiKey;
+	private final String apiUrl;
+	private final HttpClient httpClient;
+	private final ObjectMapper objectMapper;
 
-    public NovaPostClient(String apiKey, String apiUrl, HttpClient httpClient, ObjectMapper objectMapper) {
-        this.apiKey = apiKey;
-        this.apiUrl = apiUrl;
-        this.httpClient = httpClient;
-        this.objectMapper = objectMapper;
-    }
+	public NovaPostClient(String apiKey){
+		this(apiKey, DEFAULT_API_URL, HttpClient.newBuilder()
+				.connectTimeout(Duration.ofSeconds(15))
+				.build(), createDefaultMapper());
+	}
 
-    public static ObjectMapper createDefaultMapper() {
-        return new ObjectMapper()
-                .registerModule(new Jdk8Module())
-                .registerModule(new JavaTimeModule());
-    }
+	public NovaPostClient(String apiKey, String apiUrl, HttpClient httpClient, ObjectMapper objectMapper){
+		this.apiKey = apiKey;
+		this.apiUrl = apiUrl;
+		this.httpClient = httpClient;
+		this.objectMapper = objectMapper;
+	}
 
-    public NpResponse<Settlement> getSettlements(SettlementFilter filter) throws IOException, InterruptedException {
-        return execute(MODEL_ADDRESS_GENERAL, "getSettlements", filter, Settlement.class);
-    }
+	public static ObjectMapper createDefaultMapper(){
+		return new ObjectMapper()
+				.registerModule(new Jdk8Module())
+				.registerModule(new JavaTimeModule());
+	}
 
-    public NpResponse<Warehouse> getWarehouses(WarehouseFilter filter) throws IOException, InterruptedException {
-        return execute(MODEL_ADDRESS_GENERAL, "getWarehouses", filter, Warehouse.class);
-    }
+	public NpResponse<Settlement> getSettlements(SettlementFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_ADDRESS_GENERAL, "getSettlements", filter, Settlement.class);
+	}
 
-    public NpResponse<SearchSettlementItem> searchSettlements(SearchSettlementFilter filter) throws IOException, InterruptedException {
-        return execute(MODEL_ADDRESS, "searchSettlements", filter, SearchSettlementItem.class);
-    }
+	public NpResponse<Warehouse> getWarehouses(WarehouseFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_ADDRESS_GENERAL, "getWarehouses", filter, Warehouse.class);
+	}
 
-    public NpResponse<SearchSettlementItem> searchSettlements(String cityName, int page, int limit) throws IOException, InterruptedException {
-        return searchSettlements(SearchSettlementFilter.of(cityName, page, limit));
-    }
+	public NpResponse<SearchSettlementItem> searchSettlements(SearchSettlementFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_ADDRESS, "searchSettlements", filter, SearchSettlementItem.class);
+	}
 
-    public NpResponse<SettlementStreet> searchSettlementStreets(SettlementStreetFilter filter) throws IOException, InterruptedException {
-        return execute(MODEL_ADDRESS, "searchSettlementStreets", filter, SettlementStreet.class);
-    }
+	public NpResponse<SearchSettlementItem> searchSettlements(String cityName, int page, int limit) throws IOException, InterruptedException{
+		return searchSettlements(SearchSettlementFilter.of(cityName, page, limit));
+	}
 
-    public <T, R> NpResponse<R> execute(String modelName, String calledMethod, T properties, Class<R> itemClass)
-            throws IOException, InterruptedException {
-        NpRequest<T> request = new NpRequest<>(apiKey, modelName, calledMethod, properties);
-        String requestJson = objectMapper.writeValueAsString(request);
-        JavaType responseType = objectMapper.getTypeFactory()
-                .constructParametricType(NpResponse.class, itemClass);
+	public NpResponse<SettlementStreet> searchSettlementStreets(SettlementStreetFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_ADDRESS, "searchSettlementStreets", filter, SettlementStreet.class);
+	}
 
-        int maxRetries = 5;
-        long backoffMs = 1500;
+	public NpResponse<InternetDocumentResponse> saveInternetDocument(InternetDocumentSaveRequest request) throws IOException, InterruptedException{
+		return execute(MODEL_INTERNET_DOCUMENT, "save", request, InternetDocumentResponse.class);
+	}
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++) {
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(apiUrl))
-                    .timeout(Duration.ofSeconds(30))
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .header("Accept", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestJson))
-                    .build();
+	public NpResponse<InternetDocumentResponse> updateInternetDocument(InternetDocumentSaveRequest request) throws IOException, InterruptedException{
+		return execute(MODEL_INTERNET_DOCUMENT, "update", request, InternetDocumentResponse.class);
+	}
 
-            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+	public NpResponse<InternetDocumentListItem> getInternetDocumentList(InternetDocumentListFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_INTERNET_DOCUMENT, "getDocumentList", filter, InternetDocumentListItem.class);
+	}
 
-            if (response.statusCode() == 429) {
-                if (attempt == maxRetries) {
-                    throw new IOException("HTTP 429 rate limit exceeded after " + maxRetries + " attempts");
-                }
-                System.out.println("Rate limit (HTTP 429) hit for " + calledMethod + ". Backing off for " + backoffMs + "ms (attempt " + attempt + "/" + maxRetries + ")...");
-                Thread.sleep(backoffMs);
-                backoffMs *= 2;
-                continue;
-            }
+	public NpResponse<DocumentPriceResponse> getInternetDocumentPrice(DocumentPriceRequest request) throws IOException, InterruptedException{
+		return execute(MODEL_INTERNET_DOCUMENT, "getDocumentPrice", request, DocumentPriceResponse.class);
+	}
 
-            if (response.statusCode() < 200 || response.statusCode() >= 300) {
-                throw new IOException("HTTP error from Nova Post API: status " + response.statusCode() + ", body: " + response.body());
-            }
+	public NpResponse<DocumentDeliveryDateResponse> getInternetDocumentDeliveryDate(DocumentDeliveryDateRequest request) throws IOException, InterruptedException{
+		return execute(MODEL_INTERNET_DOCUMENT, "getDocumentDeliveryDate", request, DocumentDeliveryDateResponse.class);
+	}
 
-            NpResponse<R> npResponse = objectMapper.readValue(response.body(), responseType);
+	public NpResponse<InternetDocumentDeleteResponse> deleteInternetDocument(InternetDocumentDeleteRequest request) throws IOException, InterruptedException{
+		return execute(MODEL_INTERNET_DOCUMENT, "delete", request, InternetDocumentDeleteResponse.class);
+	}
 
-            boolean isRateLimitError = npResponse.errors() != null && npResponse.errors().stream()
-                    .anyMatch(err -> err != null && (err.toLowerCase().contains("to many requests") || err.toLowerCase().contains("too many requests")));
+	public NpResponse<InternetDocumentDeleteResponse> deleteInternetDocument(List<String> documentRefs) throws IOException, InterruptedException{
+		return deleteInternetDocument(InternetDocumentDeleteRequest.of(documentRefs));
+	}
 
-            if (isRateLimitError) {
-                if (attempt == maxRetries) {
-                    return npResponse;
-                }
-                System.out.println("Nova Post rate limit [Too many requests] hit for " + calledMethod + ". Backing off for " + backoffMs + "ms (attempt " + attempt + "/" + maxRetries + ")...");
-                Thread.sleep(backoffMs);
-                backoffMs *= 2;
-                continue;
-            }
+	public <T, R> NpResponse<R> execute(String modelName, String calledMethod, T properties, Class<R> itemClass)
+			throws IOException, InterruptedException{
+		NpRequest<T> request = new NpRequest<>(apiKey, modelName, calledMethod, properties);
+		String requestJson = objectMapper.writeValueAsString(request);
+		JavaType responseType = objectMapper.getTypeFactory()
+				.constructParametricType(NpResponse.class, itemClass);
 
-            return npResponse;
-        }
+		int maxRetries = 5;
+		long backoffMs = 1500;
 
-        throw new IOException("Failed to execute request after " + maxRetries + " attempts");
-    }
+		for(int attempt = 1; attempt <= maxRetries; attempt++){
+			HttpRequest httpRequest = HttpRequest.newBuilder()
+					.uri(URI.create(apiUrl))
+					.timeout(Duration.ofSeconds(30))
+					.header("Content-Type", "application/json; charset=UTF-8")
+					.header("Accept", "application/json")
+					.POST(HttpRequest.BodyPublishers.ofString(requestJson))
+					.build();
 
-    public String getApiKey() {
-        return apiKey;
-    }
+			HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
-    public String getApiUrl() {
-        return apiUrl;
-    }
+			if(response.statusCode() == 429){
+				if(attempt == maxRetries){
+					throw new IOException("HTTP 429 rate limit exceeded after " + maxRetries + " attempts");
+				}
+				System.out.println("Rate limit (HTTP 429) hit for " + calledMethod + ". Backing off for " + backoffMs + "ms (attempt " + attempt + "/" + maxRetries + ")...");
+				Thread.sleep(backoffMs);
+				backoffMs *= 2;
+				continue;
+			}
 
-    public ObjectMapper getObjectMapper() {
-        return objectMapper;
-    }
+			if(response.statusCode() < 200 || response.statusCode() >= 300){
+				throw new IOException("HTTP error from Nova Post API: status " + response.statusCode() + ", body: " + response.body());
+			}
+
+			NpResponse<R> npResponse = objectMapper.readValue(response.body(), responseType);
+
+			boolean isRateLimitError = npResponse.errors() != null && npResponse.errors().stream()
+					.anyMatch(err -> err != null && (err.toLowerCase().contains("to many requests") || err.toLowerCase().contains("too many requests")));
+
+			if(isRateLimitError){
+				if(attempt == maxRetries){
+					return npResponse;
+				}
+				System.out.println("Nova Post rate limit [Too many requests] hit for " + calledMethod + ". Backing off for " + backoffMs + "ms (attempt " + attempt + "/" + maxRetries + ")...");
+				Thread.sleep(backoffMs);
+				backoffMs *= 2;
+				continue;
+			}
+
+			return npResponse;
+		}
+
+		throw new IOException("Failed to execute request after " + maxRetries + " attempts");
+	}
+
+	public String getApiKey(){
+		return apiKey;
+	}
+
+	public String getApiUrl(){
+		return apiUrl;
+	}
+
+	public ObjectMapper getObjectMapper(){
+		return objectMapper;
+	}
 }

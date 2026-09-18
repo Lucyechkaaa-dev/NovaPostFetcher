@@ -1,6 +1,8 @@
 package com.novapost.config;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public record AppConfig(
@@ -81,6 +83,37 @@ public record AppConfig(
 		}
 
 		return new AppConfig(apiKey, dbUrl, dbUser, dbPassword, apiUrl, delay, help);
+	}
+
+	public static AppConfig getConfig(String[] args){
+		AppConfig config = AppConfig.fromArgs(args);
+
+		if(config.helpRequested()){
+			AppConfig.printUsage();
+			return null;
+		}
+
+		List<String> missingArgs = new ArrayList<>();
+		if(config.apiKey() == null || config.apiKey().isBlank()){
+			missingArgs.add("--api-key (or -k)");
+		}
+		if(config.dbUrl() == null || config.dbUrl().isBlank()){
+			missingArgs.add("--db-url");
+		}
+		if(config.dbUser() == null || config.dbUser().isBlank()){
+			missingArgs.add("--db-user (or -u)");
+		}
+		if(config.dbPassword() == null){
+			missingArgs.add("--db-password (or -p)");
+		}
+
+		if(!missingArgs.isEmpty()){
+			System.err.println("Error: Missing required program arguments: " + String.join(", ", missingArgs));
+			System.err.println();
+			AppConfig.printUsage();
+			System.exit(1);
+		}
+		return config;
 	}
 
 	public static void printUsage(){

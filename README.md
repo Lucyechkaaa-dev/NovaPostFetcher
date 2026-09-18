@@ -47,6 +47,12 @@
 | `AddressGeneral` | `getWarehouses` | Full directory of Nova Post branches and parcel lockers (поштомати) |
 | `Address` | `searchSettlements` | Fast interactive lookup for settlement auto-complete |
 | `Address` | `searchSettlementStreets` | Street search within a settlement for direct door delivery |
+| `InternetDocument` | `save` | Create / register express waybill (ЕН) |
+| `InternetDocument` | `update` | Update existing express waybill |
+| `InternetDocument` | `delete` | Delete express waybill |
+| `InternetDocument` | `getDocumentList` | Retrieve waybills list with date filtering |
+| `InternetDocument` | `getDocumentPrice` | Calculate shipping cost |
+| `InternetDocument` | `getDocumentDeliveryDate` | Calculate estimated delivery date |
 
 ---
 
@@ -92,6 +98,91 @@ java -jar target/NovaPostFetcher-1.0-SNAPSHOT.jar \
 | `--delay=<MS>` | `-d` | No | `750` | Sleep delay between pagination requests in ms |
 | `--api-url=<URL>` | | No | `https://api.novaposhta.ua/v2.0/json/` | Nova Post API entrypoint |
 | `--help` | `-h` | No | — | Display usage guidelines and exit |
+
+---
+
+## ☕ Java SDK Usage Examples
+
+Initialize the client with your API key:
+
+```java
+NovaPostClient client = new NovaPostClient("YOUR_API_KEY");
+```
+
+### 1. Settlements & Warehouses (`AddressGeneral`)
+
+```java
+// Search settlements
+NpResponse<SearchSettlementItem> settlements = client.searchSettlements("Київ", 1, 10);
+
+// Get warehouses in a city by CityRef
+WarehouseFilter filter = WarehouseFilter.byCityRef("8d5a980d-391c-11dd-90d9-001a92567626", 1, 50);
+NpResponse<Warehouse> warehouses = client.getWarehouses(filter);
+```
+
+### 2. Express Waybills (`InternetDocument`)
+
+#### Create Waybill (`save`)
+```java
+InternetDocumentSaveRequest waybill = new InternetDocumentSaveRequest(
+    null,
+    "Sender",
+    "Cash",
+    LocalDate.now(),
+    "Parcel",
+    null,
+    "1.5",
+    "WarehouseWarehouse",
+    "1",
+    "Electronics",
+    "500",
+    citySenderRef, senderRef, senderAddressRef, contactSenderRef, "+380501112233",
+    cityRecipientRef, recipientRef, recipientAddressRef, contactRecipientRef, "+380509998877",
+    null,
+    null
+);
+
+NpResponse<InternetDocumentResponse> created = client.saveInternetDocument(waybill);
+System.out.println("EN Number: " + created.data().get(0).intDocNumber());
+System.out.println("Delivery Date: " + created.data().get(0).estimatedDeliveryDate()); // LocalDate
+```
+
+#### List Waybills (`getDocumentList`)
+```java
+InternetDocumentListFilter listFilter = InternetDocumentListFilter.byDateRange(
+    LocalDate.now().minusDays(14),
+    LocalDate.now(),
+    1,
+    20
+);
+
+NpResponse<InternetDocumentListItem> docs = client.getInternetDocumentList(listFilter);
+for (InternetDocumentListItem item : docs.data()) {
+    System.out.println(item.intDocNumber() + " created at " + item.dateTime()); // LocalDateTime
+}
+```
+
+#### Calculate Shipping Price & Delivery Date
+```java
+// Cost estimation
+DocumentPriceRequest priceReq = new DocumentPriceRequest(
+    citySenderRef, cityRecipientRef, "2.0", "WarehouseWarehouse", "1000", "Parcel", "1"
+);
+NpResponse<DocumentPriceResponse> price = client.getInternetDocumentPrice(priceReq);
+System.out.println("Cost: " + price.data().get(0).cost() + " UAH");
+
+// Delivery date estimation
+DocumentDeliveryDateRequest dateReq = new DocumentDeliveryDateRequest(
+    LocalDate.now(), "WarehouseWarehouse", citySenderRef, cityRecipientRef
+);
+NpResponse<DocumentDeliveryDateResponse> date = client.getInternetDocumentDeliveryDate(dateReq);
+System.out.println("Estimated: " + date.data().get(0).getDeliveryDateTime()); // LocalDateTime
+```
+
+#### Delete Waybill (`delete`)
+```java
+client.deleteInternetDocument(List.of("document-ref-uuid"));
+```
 
 ---
 
