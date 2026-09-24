@@ -29,6 +29,7 @@ public class NovaPostClient{
 	public NovaPostClient(String apiKey){
 		this(apiKey, DEFAULT_API_URL, HttpClient.newBuilder()
 				.connectTimeout(Duration.ofSeconds(15))
+				.followRedirects(HttpClient.Redirect.NORMAL)
 				.build(), createDefaultMapper());
 	}
 
@@ -91,6 +92,91 @@ public class NovaPostClient{
 
 	public NpResponse<InternetDocumentDeleteResponse> deleteInternetDocument(List<String> documentRefs) throws IOException, InterruptedException{
 		return deleteInternetDocument(InternetDocumentDeleteRequest.of(documentRefs));
+	}
+
+	public byte[] printMarking(List<String> ttns, PrintFormat format) throws IOException, InterruptedException{
+		return downloadMarkingPdf(this.apiKey, ttns, format, this.httpClient);
+	}
+
+	public byte[] printMarking(String ttn, PrintFormat format) throws IOException, InterruptedException{
+		return printMarking(List.of(ttn), format);
+	}
+
+	public byte[] printMarkingZebra(String ttn) throws IOException, InterruptedException{
+		return printMarking(ttn, PrintFormat.ZEBRA);
+	}
+
+	public byte[] printMarkingA4(String ttn) throws IOException, InterruptedException{
+		return printMarking(ttn, PrintFormat.A4);
+	}
+
+	public byte[] printWaybill(String ttn) throws IOException, InterruptedException{
+		return printMarking(ttn, PrintFormat.WAYBILL_A4);
+	}
+
+	public byte[] printScanSheet(String scanSheetRef) throws IOException, InterruptedException{
+		return printMarking(scanSheetRef, PrintFormat.SCAN_SHEET);
+	}
+
+	public PrintableDocument fetchPrintableDocument(String ttn, PrintFormat format) throws IOException, InterruptedException{
+		return fetchPrintableDocument(List.of(ttn), format);
+	}
+
+	public PrintableDocument fetchPrintableDocument(List<String> ttns, PrintFormat format) throws IOException, InterruptedException{
+		byte[] pdfBytes = printMarking(ttns, format);
+		return PrintableDocument.of(pdfBytes, format, ttns);
+	}
+
+	public static byte[] downloadMarkingPdf(String apiKey, List<String> ttns, PrintFormat format) throws IOException, InterruptedException{
+		HttpClient defaultClient = HttpClient.newBuilder()
+				.connectTimeout(Duration.ofSeconds(15))
+				.followRedirects(HttpClient.Redirect.NORMAL)
+				.build();
+		return downloadMarkingPdf(apiKey, ttns, format, defaultClient);
+	}
+
+	public static byte[] downloadMarkingPdf(String apiKey, List<String> ttns, PrintFormat format, HttpClient client) throws IOException, InterruptedException{
+		if(format == null){
+			format = PrintFormat.ZEBRA;
+		}
+		String targetUrl = format.buildUrl(apiKey, ttns);
+
+		int maxRetries = 5;
+		long backoffMs = 1500;
+
+		for(int attempt = 1; attempt <= maxRetries; attempt++){
+			HttpRequest httpRequest = HttpRequest.newBuilder()
+					.uri(URI.create(targetUrl))
+					.timeout(Duration.ofSeconds(30))
+					.header("Accept", "application/pdf, application/octet-stream, */*")
+					.GET()
+					.build();
+
+			HttpResponse<byte[]> response = client.send(httpRequest, HttpResponse.BodyHandlers.ofByteArray());
+
+			if(response.statusCode() == 429){
+				if(attempt == maxRetries){
+					throw new IOException("HTTP 429 rate limit exceeded downloading marking PDF after " + maxRetries + " attempts");
+				}
+				Thread.sleep(backoffMs);
+				backoffMs *= 2;
+				continue;
+			}
+
+			if(response.statusCode() < 200 || response.statusCode() >= 300){
+				String errorBody = response.body() != null ? new String(response.body()) : "";
+				throw new IOException("HTTP error from Nova Post print service: status " + response.statusCode() + ", body: " + errorBody);
+			}
+
+			byte[] body = response.body();
+			if(body == null || body.length == 0){
+				throw new IOException("Received empty PDF response from Nova Post print service for TTN: " + ttns);
+			}
+
+			return body;
+		}
+
+		throw new IOException("Failed to download PDF marking after " + maxRetries + " attempts");
 	}
 
 	public <T, R> NpResponse<R> execute(String modelName, String calledMethod, T properties, Class<R> itemClass)

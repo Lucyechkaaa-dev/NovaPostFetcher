@@ -135,6 +135,155 @@ public class NovaPostController{
 		return !list.isEmpty();
 	}
 
+	public byte[] printMarking(String ttn, PrintFormat format){
+		try{
+			return client.printMarking(ttn, format);
+		}
+		catch(IOException | InterruptedException e){
+			if(e instanceof InterruptedException){
+				Thread.currentThread().interrupt();
+			}
+			throw new NovaPostApiException("Failed to generate PDF marking for TTN " + ttn + ": " + e.getMessage(), e);
+		}
+	}
+
+	public byte[] printMarking(List<String> ttns, PrintFormat format){
+		try{
+			return client.printMarking(ttns, format);
+		}
+		catch(IOException | InterruptedException e){
+			if(e instanceof InterruptedException){
+				Thread.currentThread().interrupt();
+			}
+			throw new NovaPostApiException("Failed to generate PDF marking for TTNs: " + e.getMessage(), e);
+		}
+	}
+
+	public byte[] printMarking(String ttn){
+		return printMarkingZebra(ttn);
+	}
+
+	public byte[] printMarkingZebra(String ttn){
+		return printMarking(ttn, PrintFormat.ZEBRA);
+	}
+
+	public byte[] printMarkingA4(String ttn){
+		return printMarking(ttn, PrintFormat.A4);
+	}
+
+	public static byte[] printMarking(String apiKey, String ttn, PrintFormat format){
+		return printMarking(apiKey, List.of(ttn), format);
+	}
+
+	public static byte[] printMarking(String apiKey, List<String> ttns, PrintFormat format){
+		try{
+			return NovaPostClient.downloadMarkingPdf(apiKey, ttns, format);
+		}
+		catch(IOException | InterruptedException e){
+			if(e instanceof InterruptedException){
+				Thread.currentThread().interrupt();
+			}
+			throw new NovaPostApiException("Failed to generate PDF marking for TTNs: " + e.getMessage(), e);
+		}
+	}
+
+	public static byte[] printMarking(String apiKey, String ttn){
+		return printMarkingZebra(apiKey, ttn);
+	}
+
+	public static byte[] printMarkingZebra(String apiKey, String ttn){
+		return printMarking(apiKey, ttn, PrintFormat.ZEBRA);
+	}
+
+	public static byte[] printMarkingA4(String apiKey, String ttn){
+		return printMarking(apiKey, ttn, PrintFormat.A4);
+	}
+
+	public static byte[] printWaybill(String apiKey, String ttn){
+		return printMarking(apiKey, ttn, PrintFormat.WAYBILL_A4);
+	}
+
+	public static byte[] printScanSheet(String apiKey, String scanSheetRef){
+		return printMarking(apiKey, scanSheetRef, PrintFormat.SCAN_SHEET);
+	}
+
+	public byte[] printWaybill(String ttn){
+		return printMarking(ttn, PrintFormat.WAYBILL_A4);
+	}
+
+	public byte[] printScanSheet(String scanSheetRef){
+		return printMarking(scanSheetRef, PrintFormat.SCAN_SHEET);
+	}
+
+	public PrintableDocument getPrintableDocument(String ttn, PrintFormat format){
+		try{
+			return client.fetchPrintableDocument(ttn, format);
+		}
+		catch(IOException | InterruptedException e){
+			if(e instanceof InterruptedException){
+				Thread.currentThread().interrupt();
+			}
+			throw new NovaPostApiException("Failed to fetch printable document for TTN " + ttn + ": " + e.getMessage(), e);
+		}
+	}
+
+	public PrintableDocument getPrintableDocument(List<String> ttns, PrintFormat format){
+		try{
+			return client.fetchPrintableDocument(ttns, format);
+		}
+		catch(IOException | InterruptedException e){
+			if(e instanceof InterruptedException){
+				Thread.currentThread().interrupt();
+			}
+			throw new NovaPostApiException("Failed to fetch printable document for TTNs: " + e.getMessage(), e);
+		}
+	}
+
+	public PrintableDocument getPrintableDocument(String ttn){
+		return getPrintableZebra(ttn);
+	}
+
+	public PrintableDocument getPrintableZebra(String ttn){
+		return getPrintableDocument(ttn, PrintFormat.ZEBRA);
+	}
+
+	public PrintableDocument getPrintableA4(String ttn){
+		return getPrintableDocument(ttn, PrintFormat.A4);
+	}
+
+	public PrintableDocument getPrintableWaybill(String ttn){
+		return getPrintableDocument(ttn, PrintFormat.WAYBILL_A4);
+	}
+
+	public PrintableDocument getPrintableScanSheet(String scanSheetRef){
+		return getPrintableDocument(scanSheetRef, PrintFormat.SCAN_SHEET);
+	}
+
+	public static PrintableDocument getPrintableDocument(String apiKey, String ttn, PrintFormat format){
+		return getPrintableDocument(apiKey, List.of(ttn), format);
+	}
+
+	public static PrintableDocument getPrintableDocument(String apiKey, List<String> ttns, PrintFormat format){
+		byte[] pdfBytes = printMarking(apiKey, ttns, format);
+		return PrintableDocument.of(pdfBytes, format, ttns);
+	}
+
+	public static PrintableDocument getPrintableZebra(String apiKey, String ttn){
+		return getPrintableDocument(apiKey, ttn, PrintFormat.ZEBRA);
+	}
+
+	public static PrintableDocument getPrintableA4(String apiKey, String ttn){
+		return getPrintableDocument(apiKey, ttn, PrintFormat.A4);
+	}
+
+	public static PrintableDocument getPrintableWaybill(String apiKey, String ttn){
+		return getPrintableDocument(apiKey, ttn, PrintFormat.WAYBILL_A4);
+	}
+
+	public static PrintableDocument getPrintableScanSheet(String apiKey, String scanSheetRef){
+		return getPrintableDocument(apiKey, scanSheetRef, PrintFormat.SCAN_SHEET);
+	}
+
 	public NovaPostClient getClient(){
 		return client;
 	}
