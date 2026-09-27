@@ -6,6 +6,7 @@ import com.novapost.client.NovaPostClient;
 import com.novapost.config.AppConfig;
 import com.novapost.model.*;
 import com.novapost.projection.ModelProjector;
+import com.novapost.service.WaybillFetcherService;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class NovaPostController{
 
@@ -210,6 +212,30 @@ public class NovaPostController{
 
 	public <T> List<T> getRecentWaybills(int days, Class<T> targetType){
 		return getWaybills(LocalDate.now().minusDays(Math.max(1, days)), LocalDate.now(), targetType);
+	}
+
+	public List<InternetDocumentListItem> fetchAllDocuments(LocalDate from, LocalDate to){
+		return new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to);
+	}
+
+	public <T> List<T> fetchAllDocuments(LocalDate from, LocalDate to, Class<T> targetType){
+		return new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetType);
+	}
+
+	public List<Map<String, Object>> fetchAllDocuments(LocalDate from, LocalDate to, Map<String, Object> targetFields){
+		return new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetFields);
+	}
+
+	public void fetchAllDocuments(LocalDate from, LocalDate to, Consumer<List<InternetDocumentListItem>> batchConsumer){
+		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, batchConsumer);
+	}
+
+	public <T> void fetchAllDocuments(LocalDate from, LocalDate to, Class<T> targetType, Consumer<List<T>> batchConsumer){
+		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetType, batchConsumer);
+	}
+
+	public void fetchAllDocuments(LocalDate from, LocalDate to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer){
+		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetFields, batchConsumer);
 	}
 
 	public double calculatePrice(String citySender, String cityRecipient, double weightKg, double declaredCost){

@@ -17,6 +17,7 @@ public class NovaPostSyncService{
 
 	private final NovaPostClient client;
 	private final DatabaseManager databaseManager;
+	private final WaybillFetcherService waybillFetcherService;
 	private final long pageDelayMs;
 
 	public NovaPostSyncService(NovaPostClient client, DatabaseManager databaseManager){
@@ -24,9 +25,18 @@ public class NovaPostSyncService{
 	}
 
 	public NovaPostSyncService(NovaPostClient client, DatabaseManager databaseManager, long pageDelayMs){
+		this(client, databaseManager, new WaybillFetcherService(client, pageDelayMs), pageDelayMs);
+	}
+
+	public NovaPostSyncService(NovaPostClient client, DatabaseManager databaseManager, WaybillFetcherService waybillFetcherService){
+		this(client, databaseManager, waybillFetcherService, waybillFetcherService != null ? waybillFetcherService.getThrottleDelayMs() : com.novapost.config.AppConfig.DEFAULT_PAGE_DELAY_MS);
+	}
+
+	public NovaPostSyncService(NovaPostClient client, DatabaseManager databaseManager, WaybillFetcherService waybillFetcherService, long pageDelayMs){
 		this.client = client;
 		this.databaseManager = databaseManager;
 		this.pageDelayMs = Math.max(0, pageDelayMs);
+		this.waybillFetcherService = waybillFetcherService != null ? waybillFetcherService : new WaybillFetcherService(client, pageDelayMs);
 	}
 
 	public SyncResult syncAll() throws SQLException, IOException, InterruptedException{
@@ -119,41 +129,33 @@ public class NovaPostSyncService{
 		return totalInserted;
 	}
 
-	public int syncInternetDocuments(LocalDate from, LocalDate to) throws IOException, InterruptedException, SQLException{
-		System.out.println("Fetching internet documents (waybills) from Nova Post API...");
-		int page = 1;
-		int totalInserted = 0;
+	public int syncInternetDocuments(LocalDate from, LocalDate to) throws SQLException{
+		System.out.println("Fetching and syncing internet documents (waybills) from Nova Post API for range " + from + " to " + to + "...");
+		int[] totalInserted = new int[]{0};
+		int[] batchIndex = new int[]{0};
 
-		while(true){
-			InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, DOCUMENT_PAGE_LIMIT);
-			NpResponse<InternetDocumentListItem> response = client.getInternetDocumentList(filter);
-
-			if(response.hasErrors()){
-				throw new IOException("API error fetching internet documents at page " + page + ": " + response.errors());
+		try {
+			waybillFetcherService.fetchAllDocuments(from, to, batch -> {
+				try {
+					int inserted = databaseManager.insertInternetDocuments(batch);
+					totalInserted[0] += inserted;
+					batchIndex[0]++;
+					System.out.println("Internet documents batch #" + batchIndex[0] + " inserted: " + inserted + " (total so far: " + totalInserted[0] + ")");
+				} catch (SQLException e) {
+					throw new RuntimeException("Database error saving internet documents batch #" + batchIndex[0] + ": " + e.getMessage(), e);
+				}
+			});
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof SQLException sqlEx) {
+				throw sqlEx;
 			}
-
-			List<InternetDocumentListItem> list = response.data();
-			if(list == null || list.isEmpty()){
-				break;
-			}
-
-			int inserted = databaseManager.insertInternetDocuments(list);
-			totalInserted += inserted;
-			System.out.println("Internet documents page " + page + " inserted: " + inserted + " (total so far: " + totalInserted + ")");
-
-			if(list.size() < DOCUMENT_PAGE_LIMIT){
-				break;
-			}
-			page++;
-			if(pageDelayMs > 0){
-				Thread.sleep(pageDelayMs);
-			}
+			throw e;
 		}
 
-		return totalInserted;
+		return totalInserted[0];
 	}
 
-	public int syncInternetDocuments(int daysBack) throws IOException, InterruptedException, SQLException{
+	public int syncInternetDocuments(int daysBack) throws SQLException{
 		LocalDate to = LocalDate.now();
 		LocalDate from = to.minusDays(Math.max(0, daysBack));
 		return syncInternetDocuments(from, to);
