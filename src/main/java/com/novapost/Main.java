@@ -9,6 +9,10 @@ import com.novapost.service.NovaPostSyncService;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.novapost.config.AppConfig.getConfig;
 
@@ -16,9 +20,65 @@ public class Main{
 
 	public static void main(String[] args) throws SQLException, IOException, InterruptedException{
 		Pack pack = getPack(args);
-		pack.dbManager().initializeTables();
+		// Demonstrating dynamic field projections directly from JSON:
+		demonstrateMapProjection(pack.controller());
+		demonstrateClassProjection(pack.controller());
+	}
 
-		pack.syncService().syncInternetDocuments(90);
+	/**
+	 * Demonstrates Map-based projection directly from raw JSON:
+	 * Only the requested keys are retrieved, saving CPU and memory.
+	 */
+	public static void demonstrateMapProjection(NovaPostController controller){
+		System.out.println("\n--- Demonstration: Map Projection Directly from JSON ---");
+		Map<String, Object> fields = new HashMap<>();
+		fields.put("Cost", null);
+		fields.put("IntDocNumber", null);
+		fields.put("RecipientAddressDescription", null);
+
+		List<Map<String, Object>> results = controller.getWaybills(
+				LocalDate.now().minusDays(30),
+				LocalDate.now(),
+				1,
+				5,
+				fields
+		);
+
+		System.out.println("Retrieved " + results.size() + " waybills (Map projection):");
+		for(Map<String, Object> waybill : results){
+			System.out.println("  " + waybill);
+		}
+	}
+
+	/**
+	 * Custom target record declaring only the desired fields.
+	 * Any field in Nova Post's JSON is automatically parsed and type-converted.
+	 */
+	public record WaybillCostSummary(
+			String intDocNumber,
+			double cost,
+			String recipientAddressDescription
+	){}
+
+	/**
+	 * Demonstrates Class/Record-based projection directly from raw JSON:
+	 * Only the target record is instantiated directly from JSON payload.
+	 */
+	public static void demonstrateClassProjection(NovaPostController controller){
+		System.out.println("\n--- Demonstration: Class Projection Directly from JSON ---");
+		List<WaybillCostSummary> results = controller.getWaybills(
+				LocalDate.now().minusDays(30),
+				LocalDate.now(),
+				1,
+				5,
+				WaybillCostSummary.class
+		);
+
+		System.out.println("Retrieved " + results.size() + " waybills (Class projection):");
+		for(WaybillCostSummary waybill : results){
+			System.out.println("  TTN: " + waybill.intDocNumber() + ", Cost: " + waybill.cost()
+					+ ", Address: " + waybill.recipientAddressDescription());
+		}
 	}
 
 	private static Pack getPack(String[] args){

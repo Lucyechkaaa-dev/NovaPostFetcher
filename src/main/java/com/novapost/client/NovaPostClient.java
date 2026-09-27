@@ -1,6 +1,7 @@
 package com.novapost.client;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -17,9 +18,9 @@ import java.util.List;
 public class NovaPostClient{
 
 	public static final String DEFAULT_API_URL = "https://api.novaposhta.ua/v2.0/json/";
-	private static final String MODEL_ADDRESS_GENERAL = "AddressGeneral";
-	private static final String MODEL_ADDRESS = "Address";
-	private static final String MODEL_INTERNET_DOCUMENT = "InternetDocument";
+	public static final String MODEL_ADDRESS_GENERAL = "AddressGeneral";
+	public static final String MODEL_ADDRESS = "Address";
+	public static final String MODEL_INTERNET_DOCUMENT = "InternetDocument";
 
 	private final String apiKey;
 	private final String apiUrl;
@@ -179,12 +180,10 @@ public class NovaPostClient{
 		throw new IOException("Failed to download PDF marking after " + maxRetries + " attempts");
 	}
 
-	public <T, R> NpResponse<R> execute(String modelName, String calledMethod, T properties, Class<R> itemClass)
+	public <T> JsonNode executeForRootNode(String modelName, String calledMethod, T properties)
 			throws IOException, InterruptedException{
 		NpRequest<T> request = new NpRequest<>(apiKey, modelName, calledMethod, properties);
 		String requestJson = objectMapper.writeValueAsString(request);
-		JavaType responseType = objectMapper.getTypeFactory()
-				.constructParametricType(NpResponse.class, itemClass);
 
 		int maxRetries = 5;
 		long backoffMs = 1500;
@@ -214,14 +213,22 @@ public class NovaPostClient{
 				throw new IOException("HTTP error from Nova Post API: status " + response.statusCode() + ", body: " + response.body());
 			}
 
-			NpResponse<R> npResponse = objectMapper.readValue(response.body(), responseType);
-
-			boolean isRateLimitError = npResponse.errors() != null && npResponse.errors().stream()
-					.anyMatch(err -> err != null && (err.toLowerCase().contains("to many requests") || err.toLowerCase().contains("too many requests")));
+			JsonNode root = objectMapper.readTree(response.body());
+			JsonNode errorsNode = root.path("errors");
+			boolean isRateLimitError = false;
+			if(errorsNode.isArray()){
+				for(JsonNode err : errorsNode){
+					String text = err.asText();
+					if(text != null && (text.toLowerCase().contains("to many requests") || text.toLowerCase().contains("too many requests"))){
+						isRateLimitError = true;
+						break;
+					}
+				}
+			}
 
 			if(isRateLimitError){
 				if(attempt == maxRetries){
-					return npResponse;
+					return root;
 				}
 				System.out.println("Nova Post rate limit [Too many requests] hit for " + calledMethod + ". Backing off for " + backoffMs + "ms (attempt " + attempt + "/" + maxRetries + ")...");
 				Thread.sleep(backoffMs);
@@ -229,10 +236,23 @@ public class NovaPostClient{
 				continue;
 			}
 
-			return npResponse;
+			return root;
 		}
 
 		throw new IOException("Failed to execute request after " + maxRetries + " attempts");
+	}
+
+	public <T> JsonNode executeForDataNode(String modelName, String calledMethod, T properties)
+			throws IOException, InterruptedException{
+		return executeForRootNode(modelName, calledMethod, properties).path("data");
+	}
+
+	public <T, R> NpResponse<R> execute(String modelName, String calledMethod, T properties, Class<R> itemClass)
+			throws IOException, InterruptedException{
+		JsonNode root = executeForRootNode(modelName, calledMethod, properties);
+		JavaType responseType = objectMapper.getTypeFactory()
+				.constructParametricType(NpResponse.class, itemClass);
+		return objectMapper.treeToValue(root, responseType);
 	}
 
 	public String getApiKey(){
