@@ -90,6 +90,7 @@ public class InternetDocumentModelsTest {
                     "IntDocNumber": "20450201234567",
                     "DateTime": "2026-04-20 14:30:00",
                     "Cost": "500",
+                    "PayerType": "Recipient",
                     "EstimatedDeliveryDate": "2026-04-22 18:00:00"
                 }
             ],
@@ -105,6 +106,7 @@ public class InternetDocumentModelsTest {
         assertEquals(1, response.data().size());
         assertEquals(LocalDateTime.of(2026, 4, 20, 14, 30, 0), response.data().getFirst().dateTime());
         assertEquals(LocalDateTime.of(2026, 4, 22, 18, 0, 0), response.data().getFirst().estimatedDeliveryDate());
+        assertEquals("Recipient", response.data().getFirst().payerType());
     }
 
     @Test

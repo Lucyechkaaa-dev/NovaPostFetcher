@@ -78,6 +78,7 @@ public class DatabaseManagerIntegrationTest {
                 "Kyiv",
                 "Lviv",
                 "In Transit",
+                "Sender",
                 LocalDateTime.of(2026, 3, 12, 18, 0, 0)
             );
 

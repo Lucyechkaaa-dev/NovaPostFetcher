@@ -102,6 +102,7 @@ public class DatabaseManager{
 					        city_sender_description VARCHAR(128),
 					        city_recipient_description VARCHAR(128),
 					        state_name VARCHAR(128),
+					        payer_type VARCHAR(32),
 					        estimated_delivery_date DATETIME,
 					        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 					        INDEX idx_doc_number (int_doc_number),
@@ -276,8 +277,8 @@ public class DatabaseManager{
 				        ref, int_doc_number, date_time, cost, weight, seats_amount,
 				        city_sender, city_recipient, sender_description, recipient_description,
 				        city_sender_description, city_recipient_description, state_name,
-				        estimated_delivery_date
-				    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				        payer_type, estimated_delivery_date
+				    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				    ON DUPLICATE KEY UPDATE
 				        int_doc_number = VALUES(int_doc_number),
 				        date_time = VALUES(date_time),
@@ -291,6 +292,7 @@ public class DatabaseManager{
 				        city_sender_description = VALUES(city_sender_description),
 				        city_recipient_description = VALUES(city_recipient_description),
 				        state_name = VALUES(state_name),
+				        payer_type = VALUES(payer_type),
 				        estimated_delivery_date = VALUES(estimated_delivery_date);
 				""";
 
@@ -312,7 +314,8 @@ public class DatabaseManager{
 				ps.setString(11, doc.citySenderDescription());
 				ps.setString(12, doc.cityRecipientDescription());
 				ps.setString(13, doc.stateName());
-				ps.setTimestamp(14, doc.estimatedDeliveryDate() != null ? Timestamp.valueOf(doc.estimatedDeliveryDate()) : null);
+				ps.setString(14, doc.payerType());
+				ps.setTimestamp(15, doc.estimatedDeliveryDate() != null ? Timestamp.valueOf(doc.estimatedDeliveryDate()) : null);
 				ps.addBatch();
 			}
 
@@ -547,6 +550,7 @@ public class DatabaseManager{
 				rs.getString("city_recipient_description"),
 				rs.getString("city_sender_description"),
 				rs.getString("state_name"),
+				rs.getString("payer_type"),
 				edd != null ? edd.toLocalDateTime() : null
 		);
 	}

@@ -21,6 +21,7 @@ public record InternetDocumentListItem(
 		@JsonProperty("CityRecipientDescription") String cityRecipientDescription,
 		@JsonProperty("CitySenderDescription") String citySenderDescription,
 		@JsonProperty("StateName") String stateName,
+		@JsonProperty("PayerType") String payerType,
 		@JsonProperty("EstimatedDeliveryDate") @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime estimatedDeliveryDate
 ){
 
