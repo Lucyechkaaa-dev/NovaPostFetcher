@@ -304,7 +304,7 @@ public class DatabaseManager{
 				ps.setString(1, doc.ref());
 				ps.setString(2, doc.intDocNumber());
 				ps.setTimestamp(3, doc.dateTime() != null ? Timestamp.valueOf(doc.dateTime()) : null);
-				ps.setString(4, doc.cost());
+				ps.setString(4, doc.costOnSite());
 				ps.setString(5, doc.weight());
 				ps.setString(6, doc.seatsAmount());
 				ps.setString(7, doc.citySender());
@@ -540,7 +540,7 @@ public class DatabaseManager{
 				rs.getString("ref"),
 				rs.getString("int_doc_number"),
 				dt != null ? dt.toLocalDateTime() : null,
-				rs.getString("cost"),
+				rs.getString("costOnSite"),
 				rs.getString("weight"),
 				rs.getString("seats_amount"),
 				rs.getString("city_sender"),

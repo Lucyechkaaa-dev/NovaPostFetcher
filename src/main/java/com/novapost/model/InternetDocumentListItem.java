@@ -11,7 +11,7 @@ public record InternetDocumentListItem(
 		@JsonProperty("Ref") String ref,
 		@JsonProperty("IntDocNumber") String intDocNumber,
 		@JsonProperty("DateTime") @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime dateTime,
-		@JsonProperty("Cost") String cost,
+		@JsonProperty("CostOnSite") String costOnSite,
 		@JsonProperty("Weight") String weight,
 		@JsonProperty("SeatsAmount") String seatsAmount,
 		@JsonProperty("CitySender") String citySender,

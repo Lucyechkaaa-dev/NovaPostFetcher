@@ -24,6 +24,12 @@ public record InternetDocumentListFilter(
 		return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, 1);
 	}
 
+  public static InternetDocumentListFilter byDateRange(LocalDate from, LocalDate to, int page, int limit, boolean getFullList){
+    String fromStr = from != null ? from.format(DATE_FORMATTER) : null;
+    String toStr = to != null ? to.format(DATE_FORMATTER) : null;
+    return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, getFullList ? 1 : 0);
+  }
+
 	public static InternetDocumentListFilter byDay(LocalDate day, int page, int limit){
 		if(day == null){
 			return byDateRange(null, null, page, limit);

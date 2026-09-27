@@ -118,7 +118,7 @@ public class DatabaseManagerIntegrationTest {
             Optional<InternetDocumentListItem> foundDocByNum = dbManager.findInternetDocumentByNumber("20450000000001");
             assertTrue(foundDocByNum.isPresent());
             assertEquals("test-doc-ref-1", foundDocByNum.get().ref());
-            assertEquals("85.00", foundDocByNum.get().cost());
+            assertEquals("85.00", foundDocByNum.get().costOnSite());
 
             Optional<InternetDocumentListItem> foundDocByRef = dbManager.findInternetDocumentByRef("test-doc-ref-1");
             assertTrue(foundDocByRef.isPresent());
