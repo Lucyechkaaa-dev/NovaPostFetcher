@@ -36,3 +36,10 @@ build/
 ### Mac OS ###
 .DS_Store
 /src/main/java/com/novapost/Test.java
+
+### Secrets & Local Caches ###
+.env
+.env.*
+*.log
+logs/
+*.sql

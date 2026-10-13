@@ -34,4 +34,13 @@ public class DatabaseConfig{
 	public String getPassword(){
 		return password;
 	}
+
+	@Override
+	public String toString(){
+		return "DatabaseConfig{" +
+				"url='" + url + '\'' +
+				", user='" + user + '\'' +
+				", password=[HIDDEN]" +
+				'}';
+	}
 }

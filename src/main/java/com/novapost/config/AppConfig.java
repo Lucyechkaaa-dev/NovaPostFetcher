@@ -133,4 +133,17 @@ public record AppConfig(
 				  --help, -h                      Show this help message
 				""");
 	}
+
+	@Override
+	public String toString(){
+		return "AppConfig[" +
+				"apiKey=" + (apiKey != null ? "[HIDDEN]" : "null") +
+				", dbUrl=" + dbUrl +
+				", dbUser=" + dbUser +
+				", dbPassword=" + (dbPassword != null ? "[HIDDEN]" : "null") +
+				", apiUrl=" + apiUrl +
+				", pageDelayMs=" + pageDelayMs +
+				", helpRequested=" + helpRequested +
+				']';
+	}
 }

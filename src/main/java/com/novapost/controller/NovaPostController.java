@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public class NovaPostController{
 
 	private final NovaPostClient client;
@@ -165,12 +166,28 @@ public class NovaPostController{
 		return list.getFirst();
 	}
 
+	public InternetDocumentResponse createDraft(ParticipantRouting routing){
+		return new com.novapost.service.WaybillLifecycleService(this).createDraft(routing);
+	}
+
+	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo){
+		return new com.novapost.service.WaybillLifecycleService(this).createWaybill(routing, cargo);
+	}
+
 	public InternetDocumentResponse updateWaybill(InternetDocumentSaveRequest request){
 		List<InternetDocumentResponse> list = unwrapData(() -> client.updateInternetDocument(request), "updateInternetDocument");
 		if(list.isEmpty()){
 			throw new NovaPostApiException("Waybill update succeeded with empty data array");
 		}
 		return list.getFirst();
+	}
+
+	public InternetDocumentResponse updateWaybillCargo(String ttn, CargoDetails cargo){
+		return new com.novapost.service.WaybillLifecycleService(this).updateCargo(ttn, cargo);
+	}
+
+	public boolean deleteWaybillByTtn(String ttn){
+		return new com.novapost.service.WaybillLifecycleService(this).deleteByTtn(ttn);
 	}
 
 	public List<InternetDocumentListItem> getWaybills(LocalDate from, LocalDate to){
@@ -291,6 +308,69 @@ public class NovaPostController{
 		return waybills.stream()
 				.filter(w -> ttn.equalsIgnoreCase(w.intDocNumber()))
 				.findFirst();
+	}
+
+	public Optional<JsonNode> findWaybillNodeByNumber(String ttn, LocalDate from, LocalDate to){
+		InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, 1, 100);
+		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
+		if(dataNode.isArray()){
+			for(JsonNode item : dataNode){
+				if(ttn.equalsIgnoreCase(item.path("IntDocNumber").asText())){
+					return Optional.of(item);
+				}
+			}
+		}
+		return Optional.empty();
+	}
+
+	public InternetDocumentResponse updateWaybillCargoByNumber(String ttn, LocalDate from, LocalDate to, Consumer<InternetDocumentSaveRequest.Builder> cargoCustomizer){
+		JsonNode doc = findWaybillNodeByNumber(ttn, from, to)
+				.orElseThrow(() -> new NovaPostApiException("Waybill with TTN " + ttn + " not found in date range " + from + " to " + to));
+
+		InternetDocumentSaveRequest.Builder builder = InternetDocumentSaveRequest.builder()
+				.ref(doc.path("Ref").asText(null))
+				.payerType(doc.path("PayerType").asText("Sender"))
+				.paymentMethod(doc.path("PaymentMethod").asText("NonCash"))
+				.dateTime(LocalDate.now())
+				.cargoType(doc.path("CargoType").asText("Parcel"))
+				.volumeGeneral(doc.path("VolumeGeneral").asText(null))
+				.weight(doc.path("Weight").asText(null))
+				.serviceType(doc.path("ServiceType").asText("WarehouseWarehouse"))
+				.seatsAmount(doc.path("SeatsAmount").asText("1"))
+				.description(doc.path("Description").asText(null))
+				.cost(doc.path("Cost").asText(null))
+				.citySender(doc.path("CitySender").asText(null))
+				.sender(doc.path("Sender").asText(null))
+				.senderAddress(doc.path("SenderAddress").asText(null))
+				.contactSender(doc.path("ContactSender").asText(null))
+				.sendersPhone(doc.path("SendersPhone").asText(null))
+				.cityRecipient(doc.path("CityRecipient").asText(null))
+				.recipient(doc.path("Recipient").asText(null))
+				.recipientAddress(doc.path("RecipientAddress").asText(null))
+				.contactRecipient(doc.path("ContactRecipient").asText(null))
+				.recipientsPhone(doc.path("RecipientsPhone").asText(null));
+
+		if(doc.has("OptionsSeat") && doc.path("OptionsSeat").isArray()){
+			List<InternetDocumentSaveRequest.OptionSeat> seats = new ArrayList<>();
+			for(JsonNode seatNode : doc.path("OptionsSeat")){
+				seats.add(new InternetDocumentSaveRequest.OptionSeat(
+						seatNode.path("volumetricVolume").asText(null),
+						seatNode.path("volumetricWidth").asText(null),
+						seatNode.path("volumetricLength").asText(null),
+						seatNode.path("volumetricHeight").asText(null),
+						seatNode.path("weight").asText(null)
+				));
+			}
+			if(!seats.isEmpty()){
+				builder.optionsSeat(seats);
+			}
+		}
+
+		if(cargoCustomizer != null){
+			cargoCustomizer.accept(builder);
+		}
+
+		return updateWaybill(builder.build());
 	}
 
 	public byte[] printMarking(String ttn, PrintFormat format){
