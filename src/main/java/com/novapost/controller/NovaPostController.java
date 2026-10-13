@@ -274,6 +274,25 @@ public class NovaPostController{
 		return !list.isEmpty();
 	}
 
+	public JsonNode getTracking(String ttn){
+		return getTracking(ttn, "");
+	}
+
+	public JsonNode getTracking(String ttn, String phone){
+		return executeCallForData(() -> client.getTracking(ttn, phone), "getTracking");
+	}
+
+	public JsonNode getTracking(List<String> ttns){
+		return executeCallForData(() -> client.getTracking(ttns), "getTracking");
+	}
+
+	public Optional<InternetDocumentListItem> findWaybillByNumber(String ttn, LocalDate from, LocalDate to){
+		List<InternetDocumentListItem> waybills = getWaybills(from, to, 1, 100);
+		return waybills.stream()
+				.filter(w -> ttn.equalsIgnoreCase(w.intDocNumber()))
+				.findFirst();
+	}
+
 	public byte[] printMarking(String ttn, PrintFormat format){
 		try{
 			return client.printMarking(ttn, format);

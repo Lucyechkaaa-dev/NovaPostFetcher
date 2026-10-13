@@ -21,6 +21,7 @@ public class NovaPostClient{
 	public static final String MODEL_ADDRESS_GENERAL = "AddressGeneral";
 	public static final String MODEL_ADDRESS = "Address";
 	public static final String MODEL_INTERNET_DOCUMENT = "InternetDocument";
+	public static final String MODEL_TRACKING_DOCUMENT = "TrackingDocument";
 
 	private final String apiKey;
 	private final String apiUrl;
@@ -93,6 +94,25 @@ public class NovaPostClient{
 
 	public NpResponse<InternetDocumentDeleteResponse> deleteInternetDocument(List<String> documentRefs) throws IOException, InterruptedException{
 		return deleteInternetDocument(InternetDocumentDeleteRequest.of(documentRefs));
+	}
+
+	public JsonNode getTracking(String ttn) throws IOException, InterruptedException{
+		return getTracking(ttn, "");
+	}
+
+	public JsonNode getTracking(String ttn, String phone) throws IOException, InterruptedException{
+		java.util.Map<String, String> doc = new java.util.HashMap<>();
+		doc.put("DocumentNumber", ttn);
+		doc.put("Phone", phone != null ? phone : "");
+		java.util.Map<String, Object> props = java.util.Map.of("Documents", java.util.List.of(doc));
+		return executeForDataNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", props);
+	}
+
+	public JsonNode getTracking(List<String> ttns) throws IOException, InterruptedException{
+		java.util.List<java.util.Map<String, String>> docs = ttns.stream()
+				.map(t -> java.util.Map.of("DocumentNumber", t, "Phone", ""))
+				.toList();
+		return executeForDataNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", java.util.Map.of("Documents", docs));
 	}
 
 	public byte[] printMarking(List<String> ttns, PrintFormat format) throws IOException, InterruptedException{
