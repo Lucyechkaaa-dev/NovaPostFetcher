@@ -87,4 +87,45 @@ public class NovaPostModelsTest {
         assertEquals(1, response.data().size());
         assertEquals("Київ", response.data().get(0).description());
     }
+
+    @Test
+    void testStreetSerializationAndDeserialization() throws Exception {
+        StreetFilter filter = StreetFilter.byCityAndName("city-1", "Khreshchatyk", 1, 50);
+        NpRequest<StreetFilter> request = new NpRequest<>("test-api-key", "Address", "getStreet", filter);
+        String reqJson = mapper.writeValueAsString(request);
+
+        assertTrue(reqJson.contains("\"modelName\":\"Address\""));
+        assertTrue(reqJson.contains("\"calledMethod\":\"getStreet\""));
+        assertTrue(reqJson.contains("\"CityRef\":\"city-1\""));
+        assertTrue(reqJson.contains("\"FindByString\":\"Khreshchatyk\""));
+
+        String resJson = """
+        {
+            "success": true,
+            "data": [
+                {
+                    "Ref": "c502d906-4bbe-11e4-ab6d-005056801329",
+                    "Description": "Khreshchatyk",
+                    "StreetsTypeRef": "0f1d7fbb-4bba-11e4-ab6d-005056801329",
+                    "StreetsType": "str."
+                }
+            ],
+            "errors": [],
+            "warnings": []
+        }
+        """;
+
+        JavaType type = mapper.getTypeFactory().constructParametricType(NpResponse.class, Street.class);
+        NpResponse<Street> response = mapper.readValue(resJson, type);
+
+        assertTrue(response.success());
+        assertEquals(1, response.data().size());
+        Street street = response.data().get(0);
+        assertEquals("c502d906-4bbe-11e4-ab6d-005056801329", street.ref());
+        assertEquals("Khreshchatyk", street.description());
+        assertEquals("str.", street.streetsType());
+
+        Street enriched = street.withCityRef("city-1");
+        assertEquals("city-1", enriched.cityRef());
+    }
 }

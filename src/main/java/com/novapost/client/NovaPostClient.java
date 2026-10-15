@@ -68,6 +68,14 @@ public class NovaPostClient{
 		return execute(MODEL_ADDRESS, "searchSettlementStreets", filter, SettlementStreet.class);
 	}
 
+	public NpResponse<Street> getStreet(StreetFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_ADDRESS, "getStreet", filter, Street.class);
+	}
+
+	public NpResponse<Street> getStreet(String cityRef, int page, int limit) throws IOException, InterruptedException{
+		return getStreet(StreetFilter.byCity(cityRef, page, limit));
+	}
+
 	public NpResponse<InternetDocumentResponse> saveInternetDocument(InternetDocumentSaveRequest request) throws IOException, InterruptedException{
 		return execute(MODEL_INTERNET_DOCUMENT, "save", request, InternetDocumentResponse.class);
 	}

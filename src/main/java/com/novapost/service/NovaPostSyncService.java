@@ -47,18 +47,19 @@ public class NovaPostSyncService{
 		System.out.println("Starting database initialization and table setup...");
 		databaseManager.initializeTables();
 
-		System.out.println("Truncating tables (nova_post_settlements, nova_post_warehouses, nova_post_internet_documents)...");
+		System.out.println("Truncating tables (nova_post_settlements, nova_post_warehouses, nova_post_internet_documents, nova_post_streets)...");
 		databaseManager.truncateTables();
 
 		int totalSettlements = syncSettlements();
 		int totalWarehouses = syncWarehouses();
+		int totalStreets = syncStreets();
 		int totalDocs = 0;
 		if(documentDaysBack > 0){
 			totalDocs = syncInternetDocuments(documentDaysBack);
 		}
 
-		System.out.println("Sync finished successfully. Settlements: " + totalSettlements + ", Warehouses: " + totalWarehouses + ", Documents: " + totalDocs);
-		return new SyncResult(totalSettlements, totalWarehouses, totalDocs);
+		System.out.println("Sync finished successfully. Settlements: " + totalSettlements + ", Warehouses: " + totalWarehouses + ", Streets: " + totalStreets + ", Documents: " + totalDocs);
+		return new SyncResult(totalSettlements, totalWarehouses, totalStreets, totalDocs);
 	}
 
 	public int syncSettlements() throws IOException, InterruptedException, SQLException{
@@ -161,9 +162,73 @@ public class NovaPostSyncService{
 		return syncInternetDocuments(from, to);
 	}
 
-	public record SyncResult(int settlementsCount, int warehousesCount, int internetDocumentsCount){
+	public int syncStreets() throws SQLException, IOException, InterruptedException{
+		System.out.println("Fetching all settlement references from database for streets sync...");
+		List<String> settlementRefs = databaseManager.findAllSettlementRefs();
+		System.out.println("Found " + settlementRefs.size() + " settlements to sync streets for.");
+
+		int totalInserted = 0;
+		int settlementIndex = 0;
+		for(String settlementRef : settlementRefs){
+			settlementIndex++;
+			int inserted = syncStreetsForCity(settlementRef);
+			totalInserted += inserted;
+			if(inserted > 0 || settlementIndex % 500 == 0){
+				System.out.println("Streets sync progress: settlement " + settlementIndex + "/" + settlementRefs.size()
+						+ " (" + settlementRef + "), streets inserted in this settlement: " + inserted + ", total so far: " + totalInserted);
+			}
+		}
+		System.out.println("Completed streets sync across all settlements. Total streets inserted: " + totalInserted);
+		return totalInserted;
+	}
+
+	public int syncStreetsForCity(String cityRef) throws IOException, InterruptedException, SQLException{
+		if(cityRef == null || cityRef.isBlank()){
+			return 0;
+		}
+
+		int page = 1;
+		int totalForCity = 0;
+
+		while(true){
+			StreetFilter filter = StreetFilter.byCity(cityRef, page, 500);
+			NpResponse<com.novapost.model.Street> response = client.getStreet(filter);
+
+			if(response.hasErrors()){
+				throw new IOException("API error fetching streets for city " + cityRef + " at page " + page + ": " + response.errors());
+			}
+
+			List<com.novapost.model.Street> list = response.data();
+			if(list == null || list.isEmpty()){
+				break;
+			}
+
+			List<com.novapost.model.Street> enriched = list.stream()
+					.map(s -> s.withCityRef(cityRef))
+					.toList();
+
+			int inserted = databaseManager.insertStreets(enriched);
+			totalForCity += inserted;
+
+			if(list.size() < 500){
+				break;
+			}
+			page++;
+			if(pageDelayMs > 0){
+				Thread.sleep(pageDelayMs);
+			}
+		}
+
+		return totalForCity;
+	}
+
+	public record SyncResult(int settlementsCount, int warehousesCount, int streetsCount, int internetDocumentsCount){
 		public SyncResult(int settlementsCount, int warehousesCount){
-			this(settlementsCount, warehousesCount, 0);
+			this(settlementsCount, warehousesCount, 0, 0);
+		}
+
+		public SyncResult(int settlementsCount, int warehousesCount, int internetDocumentsCount){
+			this(settlementsCount, warehousesCount, 0, internetDocumentsCount);
 		}
 	}
 }

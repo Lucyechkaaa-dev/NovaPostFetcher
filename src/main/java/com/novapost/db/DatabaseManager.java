@@ -4,12 +4,7 @@ import com.novapost.model.InternetDocumentListItem;
 import com.novapost.model.Settlement;
 import com.novapost.model.Warehouse;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -110,6 +105,19 @@ public class DatabaseManager{
 					        INDEX idx_doc_state (state_name)
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 					""");
+
+			stmt.execute("""
+					    CREATE TABLE IF NOT EXISTS nova_post_streets (
+					        ref VARCHAR(36) PRIMARY KEY,
+					        description VARCHAR(255) NOT NULL,
+					        streets_type_ref VARCHAR(36),
+					        streets_type VARCHAR(64),
+					        city_ref VARCHAR(36),
+					        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+					        INDEX idx_street_city_ref (city_ref),
+					        INDEX idx_street_desc (description)
+					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+					""");
 		}
 	}
 
@@ -120,6 +128,7 @@ public class DatabaseManager{
 			stmt.execute("TRUNCATE TABLE nova_post_warehouses;");
 			stmt.execute("TRUNCATE TABLE nova_post_settlements;");
 			stmt.execute("TRUNCATE TABLE nova_post_internet_documents;");
+			stmt.execute("TRUNCATE TABLE nova_post_streets;");
 			stmt.execute("SET FOREIGN_KEY_CHECKS = 1;");
 		}
 	}
@@ -128,12 +137,60 @@ public class DatabaseManager{
 		if(tableName == null || tableName.isBlank()){
 			return;
 		}
-		if(!List.of("nova_post_warehouses", "nova_post_settlements", "nova_post_internet_documents").contains(tableName)){
+		if(!List.of("nova_post_warehouses", "nova_post_settlements", "nova_post_internet_documents", "nova_post_streets").contains(tableName)){
 			throw new IllegalArgumentException("Unknown table name: " + tableName);
 		}
 		try(Connection conn = getConnection();
 		    Statement stmt = conn.createStatement()){
 			stmt.execute("TRUNCATE TABLE " + tableName + ";");
+		}
+	}
+
+	public List<String> findAllSettlementRefs() throws SQLException{
+		String sql = "SELECT city_ref FROM nova_post_warehouses GROUP BY city_ref";
+		try(Connection conn = getConnection();
+		    Statement stmt = conn.createStatement();
+		    ResultSet rs = stmt.executeQuery(sql)){
+			List<String> list = new ArrayList<>();
+			while(rs.next()){
+				list.add(rs.getString(1));
+			}
+			return list;
+		}
+	}
+
+	public int insertStreets(List<com.novapost.model.Street> streets) throws SQLException{
+		if(streets == null || streets.isEmpty()){
+			return 0;
+		}
+
+		String sql = """
+				    INSERT INTO nova_post_streets (
+				        ref, description, streets_type_ref, streets_type, city_ref
+				    ) VALUES (?, ?, ?, ?, ?)
+				    ON DUPLICATE KEY UPDATE
+				        description = VALUES(description),
+				        streets_type_ref = VALUES(streets_type_ref),
+				        streets_type = VALUES(streets_type),
+				        city_ref = VALUES(city_ref);
+				""";
+
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+
+			conn.setAutoCommit(false);
+			for(com.novapost.model.Street street : streets){
+				ps.setString(1, street.ref());
+				ps.setString(2, street.description());
+				ps.setString(3, street.streetsTypeRef());
+				ps.setString(4, street.streetsType());
+				ps.setString(5, street.cityRef());
+				ps.addBatch();
+			}
+
+			int[] results = ps.executeBatch();
+			conn.commit();
+			return results.length;
 		}
 	}
 
@@ -466,6 +523,55 @@ public class DatabaseManager{
 				return list;
 			}
 		}
+	}
+
+	public List<com.novapost.model.Street> findStreetsByCity(String cityRef) throws SQLException{
+		if(cityRef == null || cityRef.isBlank()){
+			return List.of();
+		}
+		String sql = "SELECT * FROM nova_post_streets WHERE city_ref = ? ORDER BY description";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, cityRef);
+			try(ResultSet rs = ps.executeQuery()){
+				List<com.novapost.model.Street> list = new ArrayList<>();
+				while(rs.next()){
+					list.add(mapStreet(rs));
+				}
+				return list;
+			}
+		}
+	}
+
+	public List<com.novapost.model.Street> searchStreetsByName(String cityRef, String namePrefix, int limit) throws SQLException{
+		if(cityRef == null || cityRef.isBlank() || namePrefix == null || namePrefix.isBlank()){
+			return List.of();
+		}
+		int safeLimit = Math.max(1, Math.min(limit, 500));
+		String sql = "SELECT * FROM nova_post_streets WHERE city_ref = ? AND description LIKE ? ORDER BY description LIMIT ?";
+		try(Connection conn = getConnection();
+		    PreparedStatement ps = conn.prepareStatement(sql)){
+			ps.setString(1, cityRef);
+			ps.setString(2, namePrefix + "%");
+			ps.setInt(3, safeLimit);
+			try(ResultSet rs = ps.executeQuery()){
+				List<com.novapost.model.Street> list = new ArrayList<>();
+				while(rs.next()){
+					list.add(mapStreet(rs));
+				}
+				return list;
+			}
+		}
+	}
+
+	private com.novapost.model.Street mapStreet(ResultSet rs) throws SQLException{
+		return new com.novapost.model.Street(
+				rs.getString("ref"),
+				rs.getString("description"),
+				rs.getString("streets_type_ref"),
+				rs.getString("streets_type"),
+				rs.getString("city_ref")
+		);
 	}
 
 	private Settlement mapSettlement(ResultSet rs) throws SQLException{

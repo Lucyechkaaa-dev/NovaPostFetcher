@@ -56,4 +56,58 @@ public class NovaPostSyncServiceTest {
 		assertEquals(100, insertedBatches.get(0).size());
 		assertEquals(5, insertedBatches.get(1).size());
 	}
+
+	@Test
+	void testSyncStreetsForCity() throws Exception {
+		List<String> capturedRequests = new ArrayList<>();
+
+		WaybillFetcherServiceTest.MockScriptedHttpClient httpClient = new WaybillFetcherServiceTest.MockScriptedHttpClient((req, reqBody) -> {
+			capturedRequests.add(reqBody);
+			if (reqBody.contains("\"calledMethod\":\"getStreet\"")) {
+				return """
+				{
+				  "success": true,
+				  "data": [
+				    {
+				      "Ref": "street-ref-1",
+				      "Description": "Khreshchatyk",
+				      "StreetsTypeRef": "type-ref-1",
+				      "StreetsType": "str."
+				    },
+				    {
+				      "Ref": "street-ref-2",
+				      "Description": "Shevchenka",
+				      "StreetsTypeRef": "type-ref-1",
+				      "StreetsType": "blvd."
+				    }
+				  ],
+				  "errors": [],
+				  "warnings": []
+				}
+				""";
+			}
+			return "{\"success\":true,\"data\":[],\"errors\":[]}";
+		});
+
+		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, httpClient, NovaPostClient.createDefaultMapper());
+
+		List<com.novapost.model.Street> insertedStreets = new ArrayList<>();
+		DatabaseManager stubDbManager = new DatabaseManager(new DatabaseConfig("jdbc:mysql://localhost:3306/dummy", "u", "p")) {
+			@Override
+			public int insertStreets(List<com.novapost.model.Street> streets) {
+				insertedStreets.addAll(streets);
+				return streets.size();
+			}
+		};
+
+		NovaPostSyncService syncService = new NovaPostSyncService(client, stubDbManager, 0);
+		int inserted = syncService.syncStreetsForCity("city-ref-kyiv");
+
+		assertEquals(2, inserted);
+		assertEquals(2, insertedStreets.size());
+		assertEquals("street-ref-1", insertedStreets.get(0).ref());
+		assertEquals("Khreshchatyk", insertedStreets.get(0).description());
+		assertEquals("city-ref-kyiv", insertedStreets.get(0).cityRef());
+		assertEquals("city-ref-kyiv", insertedStreets.get(1).cityRef());
+	}
 }

@@ -45,6 +45,7 @@
 |---|---|---|
 | `AddressGeneral` | `getSettlements` | Full directory of Ukrainian settlements (cities, towns, villages) |
 | `AddressGeneral` | `getWarehouses` | Full directory of Nova Post branches and parcel lockers (поштомати) |
+| `Address` | `getStreet` | Search or list streets in a settlement by CityRef |
 | `Address` | `searchSettlements` | Fast interactive lookup for settlement auto-complete |
 | `Address` | `searchSettlementStreets` | Street search within a settlement for direct door delivery |
 | `InternetDocument` | `save` | Create / register express waybill (ЕН) |
@@ -118,6 +119,10 @@ NpResponse<SearchSettlementItem> settlements = client.searchSettlements("Киї�
 // Get warehouses in a city by CityRef
 WarehouseFilter filter = WarehouseFilter.byCityRef("8d5a980d-391c-11dd-90d9-001a92567626", 1, 50);
 NpResponse<Warehouse> warehouses = client.getWarehouses(filter);
+
+// Get streets in a city by CityRef or search by name prefix
+NpResponse<Street> streets = client.getStreet(StreetFilter.byCityRef("8d5a980d-391c-11dd-90d9-001a92567626", 1, 100));
+NpResponse<Street> matchedStreets = client.getStreet(StreetFilter.searchInCity("8d5a980d-391c-11dd-90d9-001a92567626", "Хрещатик", 1, 20));
 ```
 
 ### 2. Express Waybills (`InternetDocument`)

@@ -22,6 +22,8 @@ public class DatabaseManagerUnitTest {
         assertEquals(0, manager.insertWarehouses(Collections.emptyList()));
         assertEquals(0, manager.insertInternetDocuments(null));
         assertEquals(0, manager.insertInternetDocuments(Collections.emptyList()));
+        assertEquals(0, manager.insertStreets(null));
+        assertEquals(0, manager.insertStreets(Collections.emptyList()));
     }
 
     @Test
@@ -49,5 +51,10 @@ public class DatabaseManagerUnitTest {
         assertTrue(manager.findWarehousesBySettlement(null).isEmpty());
         assertTrue(manager.findWarehousesByCity("").isEmpty());
         assertTrue(manager.findInternetDocumentsByDateRange(null, null).isEmpty());
+        assertTrue(manager.findStreetsByCity(null).isEmpty());
+        assertTrue(manager.findStreetsByCity("").isEmpty());
+        assertTrue(manager.searchStreetsByName(null, "Khreshchatyk", 10).isEmpty());
+        assertTrue(manager.searchStreetsByName("city-ref", null, 10).isEmpty());
+        assertTrue(manager.searchStreetsByName("", "", 10).isEmpty());
     }
 }

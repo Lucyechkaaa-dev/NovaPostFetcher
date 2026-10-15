@@ -158,6 +158,38 @@ public class NovaPostController{
 		return projector.projectJsonArrayToClass(dataNode, targetType);
 	}
 
+	public List<Street> getStreets(String cityRef){
+		return getStreets(cityRef, 1, 500);
+	}
+
+	public List<Street> getStreets(String cityRef, int page, int limit){
+		StreetFilter filter = StreetFilter.byCity(cityRef, page, limit);
+		List<Street> streets = unwrapData(() -> client.getStreet(filter), "getStreet");
+		return streets.stream().map(s -> s.withCityRef(cityRef)).toList();
+	}
+
+	public List<Street> searchStreetsByCity(String cityRef, String streetName){
+		return searchStreetsByCity(cityRef, streetName, 1, 100);
+	}
+
+	public List<Street> searchStreetsByCity(String cityRef, String streetName, int page, int limit){
+		StreetFilter filter = StreetFilter.byCityAndName(cityRef, streetName, page, limit);
+		List<Street> streets = unwrapData(() -> client.getStreet(filter), "getStreet");
+		return streets.stream().map(s -> s.withCityRef(cityRef)).toList();
+	}
+
+	public List<Map<String, Object>> getStreets(String cityRef, int page, int limit, Map<String, Object> targetFields){
+		StreetFilter filter = StreetFilter.byCity(cityRef, page, limit);
+		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS, "getStreet", filter), "getStreet");
+		return projector.projectJsonArrayToMap(dataNode, targetFields);
+	}
+
+	public <T> List<T> getStreets(String cityRef, int page, int limit, Class<T> targetType){
+		StreetFilter filter = StreetFilter.byCity(cityRef, page, limit);
+		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS, "getStreet", filter), "getStreet");
+		return projector.projectJsonArrayToClass(dataNode, targetType);
+	}
+
 	public InternetDocumentResponse createWaybill(InternetDocumentSaveRequest request){
 		List<InternetDocumentResponse> list = unwrapData(() -> client.saveInternetDocument(request), "saveInternetDocument");
 		if(list.isEmpty()){
