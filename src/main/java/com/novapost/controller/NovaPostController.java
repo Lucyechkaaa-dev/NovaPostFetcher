@@ -99,10 +99,21 @@ public class NovaPostController{
 		return getWarehouses(cityRef, 1, 100);
 	}
 
-	public List<Warehouse> getWarehouses(String cityRef, int page, int limit){
+	public List<WarehouseTypes> getWarehouseTypes(){
+		return unwrapData(client :: getWarehouseTypes, "getWarehouseTypes");
+	}
+
+  public <T> List<T> getWarehouseTypes(Class<T> targetType){
+    JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS_GENERAL, "getWarehouseTypes", null), "getWarehouseTypes");
+    return projector.projectJsonArrayToClass(dataNode, targetType);
+  }
+
+
+  public List<Warehouse> getWarehouses(String cityRef, int page, int limit){
 		WarehouseFilter filter = WarehouseFilter.byCityRef(cityRef, page, limit);
 		return unwrapData(() -> client.getWarehouses(filter), "getWarehouses");
 	}
+
 
 	public List<Map<String, Object>> getWarehouses(String cityRef, Map<String, Object> targetFields){
 		return getWarehouses(cityRef, 1, 100, targetFields);

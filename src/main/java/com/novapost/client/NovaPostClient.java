@@ -56,6 +56,10 @@ public class NovaPostClient{
 		return execute(MODEL_ADDRESS_GENERAL, "getWarehouses", filter, Warehouse.class);
 	}
 
+  public NpResponse<WarehouseTypes> getWarehouseTypes() throws IOException, InterruptedException{
+    return execute(MODEL_ADDRESS_GENERAL, "getWarehouseTypes", null, WarehouseTypes.class);
+  }
+
 	public NpResponse<SearchSettlementItem> searchSettlements(SearchSettlementFilter filter) throws IOException, InterruptedException{
 		return execute(MODEL_ADDRESS, "searchSettlements", filter, SearchSettlementItem.class);
 	}
