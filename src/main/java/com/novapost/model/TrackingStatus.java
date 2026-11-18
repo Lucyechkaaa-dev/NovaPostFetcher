@@ -3,6 +3,9 @@ package com.novapost.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * One item from TrackingDocument/getStatusDocuments.
  * Only the commonly used fields are declared; the rest of the response is ignored.
@@ -40,5 +43,9 @@ public record TrackingStatus(
 		@JsonProperty("WarehouseRecipientAddress") String warehouseRecipientAddress,
 		@JsonProperty("WarehouseRecipientRef") String warehouseRecipientRef,
 		@JsonProperty("PossibilityCreateClaim") Boolean possibilityCreateClaim
-) {
+){
+
+	public LocalDateTime getDateCreated(){
+		return LocalDateTime.parse(dateCreated, DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+	}
 }
