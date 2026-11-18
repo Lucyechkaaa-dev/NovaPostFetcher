@@ -21,14 +21,14 @@ public record InternetDocumentListFilter(
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
 	public static InternetDocumentListFilter byDateRange(LocalDateTime from, LocalDateTime to, int page, int limit){
-		String fromStr = from != null ? from.format(DATE_TIME_FORMATTER) : null;
-		String toStr = to != null ? to.format(DATE_TIME_FORMATTER) : null;
+		String fromStr = from != null ? from.format(DATE_FORMATTER) : null;
+		String toStr = to != null ? to.format(DATE_FORMATTER) : null;
 		return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, 1);
 	}
 
 	public static InternetDocumentListFilter byDateRange(LocalDateTime from, LocalDateTime to, int page, int limit, boolean getFullList){
-		String fromStr = from != null ? from.format(DATE_TIME_FORMATTER) : null;
-		String toStr = to != null ? to.format(DATE_TIME_FORMATTER) : null;
+		String fromStr = from != null ? from.format(DATE_FORMATTER) : null;
+		String toStr = to != null ? to.format(DATE_FORMATTER) : null;
 		return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, getFullList ? 1 : 0);
 	}
 

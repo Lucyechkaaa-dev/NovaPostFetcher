@@ -415,8 +415,7 @@ public class NovaPostController{
 		}
 		String wanted = ttn.trim();
 		for(int page = 1; ; page++){
-			final int currentPage = page;
-			InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, currentPage, TTN_LOOKUP_PAGE_SIZE);
+      InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, TTN_LOOKUP_PAGE_SIZE);
 			JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
 			if(!dataNode.isArray() || dataNode.isEmpty()){
 				return Optional.empty();
