@@ -108,11 +108,27 @@ public class NovaPostClient{
 		return deleteInternetDocument(InternetDocumentDeleteRequest.of(documentRefs));
 	}
 
-	public JsonNode getTracking(String ttn) throws IOException, InterruptedException{
+	/** Tracking statuses for one TTN. */
+	public List<TrackingStatus> getTracking(String ttn) throws IOException, InterruptedException{
 		return getTracking(ttn, "");
 	}
 
-	public JsonNode getTracking(String ttn, String phone) throws IOException, InterruptedException{
+	/** Tracking statuses for one TTN, with the recipient phone when Nova Post requires it. */
+	public List<TrackingStatus> getTracking(String ttn, String phone) throws IOException, InterruptedException{
+		return toTrackingStatuses(getTrackingNode(ttn, phone));
+	}
+
+	/** Tracking statuses for several TTNs in one request. */
+	public List<TrackingStatus> getTracking(List<String> ttns) throws IOException, InterruptedException{
+		return toTrackingStatuses(getTrackingNode(ttns));
+	}
+
+	/** Raw "data" array of the tracking response, for fields that TrackingStatus does not declare. */
+	public JsonNode getTrackingNode(String ttn) throws IOException, InterruptedException{
+		return getTrackingNode(ttn, "");
+	}
+
+	public JsonNode getTrackingNode(String ttn, String phone) throws IOException, InterruptedException{
 		java.util.Map<String, String> doc = new java.util.HashMap<>();
 		doc.put("DocumentNumber", ttn);
 		doc.put("Phone", phone != null ? phone : "");
@@ -120,11 +136,18 @@ public class NovaPostClient{
 		return executeForDataNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", props);
 	}
 
-	public JsonNode getTracking(List<String> ttns) throws IOException, InterruptedException{
+	public JsonNode getTrackingNode(List<String> ttns) throws IOException, InterruptedException{
 		java.util.List<java.util.Map<String, String>> docs = ttns.stream()
 				.map(t -> java.util.Map.of("DocumentNumber", t, "Phone", ""))
 				.toList();
 		return executeForDataNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", java.util.Map.of("Documents", docs));
+	}
+
+	private List<TrackingStatus> toTrackingStatuses(JsonNode dataNode){
+		if(dataNode == null || !dataNode.isArray()){
+			return List.of();
+		}
+		return objectMapper.convertValue(dataNode, new com.fasterxml.jackson.core.type.TypeReference<List<TrackingStatus>>(){});
 	}
 
 	public byte[] printMarking(List<String> ttns, PrintFormat format) throws IOException, InterruptedException{

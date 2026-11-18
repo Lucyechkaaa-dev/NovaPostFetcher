@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,7 +48,7 @@ public class NovaPostSyncServiceTest {
 
 		NovaPostSyncService syncService = new NovaPostSyncService(client, stubDbManager, waybillFetcherService);
 
-		LocalDate day = LocalDate.of(2026, 8, 1);
+		LocalDateTime day = LocalDateTime.of(2026, 8, 1, 0, 0);
 		int syncedCount = syncService.syncInternetDocuments(day, day);
 
 		assertEquals(105, syncedCount);

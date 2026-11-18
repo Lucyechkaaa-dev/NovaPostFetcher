@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,14 +40,14 @@ public class InternetDocumentModelsTest {
     @Test
     void testInternetDocumentListFilterSerialization() throws Exception {
         InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(
-            LocalDate.of(2026, 4, 1),
-            LocalDate.of(2026, 4, 30),
+            LocalDateTime.of(2026, 4, 1, 0, 0),
+            LocalDateTime.of(2026, 4, 30, 23, 59, 59),
             1, 50
         );
 
         String json = mapper.writeValueAsString(filter);
-        assertTrue(json.contains("\"DateTimeFrom\":\"01.04.2026\""));
-        assertTrue(json.contains("\"DateTimeTo\":\"30.04.2026\""));
+        assertTrue(json.contains("\"DateTimeFrom\":\"01.04.2026 00:00:00\""));
+        assertTrue(json.contains("\"DateTimeTo\":\"30.04.2026 23:59:59\""));
     }
 
     @Test

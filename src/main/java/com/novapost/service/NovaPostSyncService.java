@@ -6,7 +6,7 @@ import com.novapost.model.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class NovaPostSyncService{
@@ -130,7 +130,7 @@ public class NovaPostSyncService{
 		return totalInserted;
 	}
 
-	public int syncInternetDocuments(LocalDate from, LocalDate to) throws SQLException{
+	public int syncInternetDocuments(LocalDateTime from, LocalDateTime to) throws SQLException{
 		System.out.println("Fetching and syncing internet documents (waybills) from Nova Post API for range " + from + " to " + to + "...");
 		int[] totalInserted = new int[]{0};
 		int[] batchIndex = new int[]{0};
@@ -157,8 +157,8 @@ public class NovaPostSyncService{
 	}
 
 	public int syncInternetDocuments(int daysBack) throws SQLException{
-		LocalDate to = LocalDate.now();
-		LocalDate from = to.minusDays(Math.max(0, daysBack));
+		LocalDateTime to = LocalDateTime.now();
+		LocalDateTime from = to.minusDays(Math.max(0, daysBack));
 		return syncInternetDocuments(from, to);
 	}
 

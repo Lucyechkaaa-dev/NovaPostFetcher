@@ -9,7 +9,7 @@ import com.novapost.service.NovaPostSyncService;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,8 +37,8 @@ public class Main{
 		fields.put("RecipientAddressDescription", null);
 
 		List<Map<String, Object>> results = controller.getWaybills(
-				LocalDate.now().minusDays(30),
-				LocalDate.now(),
+				LocalDateTime.now().minusDays(30),
+				LocalDateTime.now(),
 				1,
 				5,
 				fields
@@ -67,8 +67,8 @@ public class Main{
 	public static void demonstrateClassProjection(NovaPostController controller){
 		System.out.println("\n--- Demonstration: Class Projection Directly from JSON ---");
 		List<WaybillCostSummary> results = controller.getWaybills(
-				LocalDate.now().minusDays(30),
-				LocalDate.now(),
+				LocalDateTime.now().minusDays(30),
+				LocalDateTime.now(),
 				1,
 				5,
 				WaybillCostSummary.class

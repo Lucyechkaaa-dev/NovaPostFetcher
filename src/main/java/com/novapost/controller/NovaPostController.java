@@ -1,5 +1,6 @@
 package com.novapost.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import com.novapost.client.NovaPostClient;
@@ -11,10 +12,7 @@ import com.novapost.service.WaybillFetcherService;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
@@ -100,16 +98,16 @@ public class NovaPostController{
 	}
 
 	public List<WarehouseTypes> getWarehouseTypes(){
-		return unwrapData(client :: getWarehouseTypes, "getWarehouseTypes");
+		return unwrapData(client::getWarehouseTypes, "getWarehouseTypes");
 	}
 
-  public <T> List<T> getWarehouseTypes(Class<T> targetType){
-    JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS_GENERAL, "getWarehouseTypes", null), "getWarehouseTypes");
-    return projector.projectJsonArrayToClass(dataNode, targetType);
-  }
+	public <T> List<T> getWarehouseTypes(Class<T> targetType){
+		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS_GENERAL, "getWarehouseTypes", null), "getWarehouseTypes");
+		return projector.projectJsonArrayToClass(dataNode, targetType);
+	}
 
 
-  public List<Warehouse> getWarehouses(String cityRef, int page, int limit){
+	public List<Warehouse> getWarehouses(String cityRef, int page, int limit){
 		WarehouseFilter filter = WarehouseFilter.byCityRef(cityRef, page, limit);
 		return unwrapData(() -> client.getWarehouses(filter), "getWarehouses");
 	}
@@ -233,68 +231,68 @@ public class NovaPostController{
 		return new com.novapost.service.WaybillLifecycleService(this).deleteByTtn(ttn);
 	}
 
-	public List<InternetDocumentListItem> getWaybills(LocalDate from, LocalDate to){
+	public List<InternetDocumentListItem> getWaybills(LocalDateTime from, LocalDateTime to){
 		return getWaybills(from, to, 1, 50);
 	}
 
-	public List<InternetDocumentListItem> getWaybills(LocalDate from, LocalDate to, int page, int limit){
+	public List<InternetDocumentListItem> getWaybills(LocalDateTime from, LocalDateTime to, int page, int limit){
 		InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, limit);
 		return unwrapData(() -> client.getInternetDocumentList(filter), "getInternetDocumentList");
 	}
 
-	public List<Map<String, Object>> getWaybills(LocalDate from, LocalDate to, Map<String, Object> targetFields){
+	public List<Map<String, Object>> getWaybills(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields){
 		return getWaybills(from, to, 1, 50, targetFields);
 	}
 
-	public List<Map<String, Object>> getWaybills(LocalDate from, LocalDate to, int page, int limit, Map<String, Object> targetFields){
+	public List<Map<String, Object>> getWaybills(LocalDateTime from, LocalDateTime to, int page, int limit, Map<String, Object> targetFields){
 		InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, limit);
 		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
 		return projector.projectJsonArrayToMap(dataNode, targetFields);
 	}
 
-	public <T> List<T> getWaybills(LocalDate from, LocalDate to, Class<T> targetType){
+	public <T> List<T> getWaybills(LocalDateTime from, LocalDateTime to, Class<T> targetType){
 		return getWaybills(from, to, 1, 50, targetType);
 	}
 
-	public <T> List<T> getWaybills(LocalDate from, LocalDate to, int page, int limit, Class<T> targetType){
+	public <T> List<T> getWaybills(LocalDateTime from, LocalDateTime to, int page, int limit, Class<T> targetType){
 		InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, limit);
 		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
 		return projector.projectJsonArrayToClass(dataNode, targetType);
 	}
 
 	public List<InternetDocumentListItem> getRecentWaybills(int days){
-		return getWaybills(LocalDate.now().minusDays(Math.max(1, days)), LocalDate.now());
+		return getWaybills(LocalDateTime.now().minusDays(Math.max(1, days)), LocalDateTime.now());
 	}
 
 	public List<Map<String, Object>> getRecentWaybills(int days, Map<String, Object> targetFields){
-		return getWaybills(LocalDate.now().minusDays(Math.max(1, days)), LocalDate.now(), targetFields);
+		return getWaybills(LocalDateTime.now().minusDays(Math.max(1, days)), LocalDateTime.now(), targetFields);
 	}
 
 	public <T> List<T> getRecentWaybills(int days, Class<T> targetType){
-		return getWaybills(LocalDate.now().minusDays(Math.max(1, days)), LocalDate.now(), targetType);
+		return getWaybills(LocalDateTime.now().minusDays(Math.max(1, days)), LocalDateTime.now(), targetType);
 	}
 
-	public List<InternetDocumentListItem> fetchAllDocuments(LocalDate from, LocalDate to){
+	public List<InternetDocumentListItem> fetchAllDocuments(LocalDateTime from, LocalDateTime to){
 		return new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to);
 	}
 
-	public <T> List<T> fetchAllDocuments(LocalDate from, LocalDate to, Class<T> targetType){
+	public <T> List<T> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType){
 		return new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetType);
 	}
 
-	public List<Map<String, Object>> fetchAllDocuments(LocalDate from, LocalDate to, Map<String, Object> targetFields){
+	public List<Map<String, Object>> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields){
 		return new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetFields);
 	}
 
-	public void fetchAllDocuments(LocalDate from, LocalDate to, Consumer<List<InternetDocumentListItem>> batchConsumer){
+	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Consumer<List<InternetDocumentListItem>> batchConsumer){
 		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, batchConsumer);
 	}
 
-	public <T> void fetchAllDocuments(LocalDate from, LocalDate to, Class<T> targetType, Consumer<List<T>> batchConsumer){
+	public <T> void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType, Consumer<List<T>> batchConsumer){
 		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetType, batchConsumer);
 	}
 
-	public void fetchAllDocuments(LocalDate from, LocalDate to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer){
+	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer){
 		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetFields, batchConsumer);
 	}
 
@@ -316,12 +314,13 @@ public class NovaPostController{
 	}
 
 	public Optional<LocalDateTime> estimateDeliveryDate(String citySender, String cityRecipient){
-		return estimateDeliveryDate(citySender, cityRecipient, "WarehouseWarehouse", LocalDate.now());
+		return estimateDeliveryDate(citySender, cityRecipient, "WarehouseWarehouse", LocalDateTime.now());
 	}
 
 	public Optional<LocalDateTime> estimateDeliveryDate(String citySender, String cityRecipient,
-	                                                    String serviceType, LocalDate departureDate){
-		DocumentDeliveryDateRequest req = new DocumentDeliveryDateRequest(departureDate, serviceType, citySender, cityRecipient);
+	                                                    String serviceType, LocalDateTime departureDate){
+		// The delivery-date API takes a calendar date only.
+		DocumentDeliveryDateRequest req = new DocumentDeliveryDateRequest(departureDate.toLocalDate(), serviceType, citySender, cityRecipient);
 		List<DocumentDeliveryDateResponse> list = unwrapData(() -> client.getInternetDocumentDeliveryDate(req), "getInternetDocumentDeliveryDate");
 		if(list.isEmpty()){
 			return Optional.empty();
@@ -334,26 +333,106 @@ public class NovaPostController{
 		return !list.isEmpty();
 	}
 
-	public JsonNode getTracking(String ttn){
+	/** Tracking statuses for one TTN. Returns an empty list if Nova Post knows no such document. */
+	public List<TrackingStatus> getTracking(String ttn){
 		return getTracking(ttn, "");
 	}
 
-	public JsonNode getTracking(String ttn, String phone){
-		return executeCallForData(() -> client.getTracking(ttn, phone), "getTracking");
+	public List<TrackingStatus> getTracking(String ttn, String phone){
+		return toTrackingStatuses(executeCallForData(() -> client.getTrackingNode(ttn, phone), "getTracking"));
 	}
 
-	public JsonNode getTracking(List<String> ttns){
-		return executeCallForData(() -> client.getTracking(ttns), "getTracking");
+	public List<TrackingStatus> getTracking(List<String> ttns){
+		return toTrackingStatuses(executeCallForData(() -> client.getTrackingNode(ttns), "getTracking"));
 	}
 
-	public Optional<InternetDocumentListItem> findWaybillByNumber(String ttn, LocalDate from, LocalDate to){
-		List<InternetDocumentListItem> waybills = getWaybills(from, to, 1, 100);
-		return waybills.stream()
-				.filter(w -> ttn.equalsIgnoreCase(w.intDocNumber()))
-				.findFirst();
+	/** Raw tracking JSON, for fields that TrackingStatus does not declare. */
+	public JsonNode getTrackingNode(String ttn){
+		return executeCallForData(() -> client.getTrackingNode(ttn), "getTracking");
 	}
 
-	public Optional<JsonNode> findWaybillNodeByNumber(String ttn, LocalDate from, LocalDate to){
+	private List<TrackingStatus> toTrackingStatuses(JsonNode dataNode){
+		if(dataNode == null || !dataNode.isArray()){
+			return List.of();
+		}
+		return client.getObjectMapper().convertValue(dataNode, new com.fasterxml.jackson.core.type.TypeReference<List<TrackingStatus>>(){
+		});
+	}
+
+	/**
+	 * Finds a waybill by TTN created on the given day (from 00:00:00 to 23:59:59 of that date).
+	 */
+	public Optional<InternetDocumentListItem> findWaybillByNumber(String ttn, LocalDateTime date){
+		Objects.requireNonNull(date, "date must not be null");
+		LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
+		LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
+		return fetchWaybillByTtn(ttn, startOfDay, endOfDay);
+	}
+
+	/**
+	 * Fetches one internet document (waybill) by its TTN (IntDocNumber), searching the last 30 days.
+	 */
+	public Optional<InternetDocumentListItem> fetchWaybillByTtn(String ttn){
+		return fetchWaybillByTtn(ttn, LocalDateTime.now().minusDays(30), LocalDateTime.now());
+	}
+
+	/**
+	 * Fetches one internet document (waybill) by its TTN (IntDocNumber) within a date range.
+	 * Pages through results until the TTN is found, the API returns an empty or short page,
+	 * so waybills beyond the first 100 results are still found.
+	 *
+	 * @throws IllegalArgumentException if the TTN is blank or {@code from} is after {@code to}
+	 */
+	public Optional<InternetDocumentListItem> fetchWaybillByTtn(String ttn, LocalDateTime from, LocalDateTime to){
+		return findWaybillNodeByTtnPaged(ttn, from, to).map(node -> {
+			try{
+				return client.getObjectMapper().treeToValue(node, InternetDocumentListItem.class);
+			}
+			catch(JsonProcessingException e){
+				throw new NovaPostApiException("Failed to parse waybill " + ttn + ": " + e.getOriginalMessage(), e);
+			}
+		});
+	}
+
+	/**
+	 * Same lookup as {@link #fetchWaybillByTtn(String, LocalDateTime, LocalDateTime)}, but returns the raw JSON node
+	 * so callers can read fields the record does not declare.
+	 */
+	public Optional<JsonNode> fetchWaybillNodeByTtn(String ttn, LocalDateTime from, LocalDateTime to){
+		return findWaybillNodeByTtnPaged(ttn, from, to);
+	}
+
+	private static final int TTN_LOOKUP_PAGE_SIZE = 100;
+
+	private Optional<JsonNode> findWaybillNodeByTtnPaged(String ttn, LocalDateTime from, LocalDateTime to){
+		if(ttn == null || ttn.isBlank()){
+			throw new IllegalArgumentException("TTN must not be null or blank");
+		}
+		Objects.requireNonNull(from, "from must not be null");
+		Objects.requireNonNull(to, "to must not be null");
+		if(from.isAfter(to)){
+			throw new IllegalArgumentException("from (" + from + ") must not be after to (" + to + ")");
+		}
+		String wanted = ttn.trim();
+		for(int page = 1; ; page++){
+			final int currentPage = page;
+			InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, currentPage, TTN_LOOKUP_PAGE_SIZE);
+			JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
+			if(!dataNode.isArray() || dataNode.isEmpty()){
+				return Optional.empty();
+			}
+			for(JsonNode item : dataNode){
+				if(wanted.equalsIgnoreCase(item.path("IntDocNumber").asText())){
+					return Optional.of(item);
+				}
+			}
+			if(dataNode.size() < TTN_LOOKUP_PAGE_SIZE){
+				return Optional.empty();
+			}
+		}
+	}
+
+	public Optional<JsonNode> findWaybillNodeByNumber(String ttn, LocalDateTime from, LocalDateTime to){
 		InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, 1, 100);
 		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
 		if(dataNode.isArray()){
@@ -366,7 +445,7 @@ public class NovaPostController{
 		return Optional.empty();
 	}
 
-	public InternetDocumentResponse updateWaybillCargoByNumber(String ttn, LocalDate from, LocalDate to, Consumer<InternetDocumentSaveRequest.Builder> cargoCustomizer){
+	public InternetDocumentResponse updateWaybillCargoByNumber(String ttn, LocalDateTime from, LocalDateTime to, Consumer<InternetDocumentSaveRequest.Builder> cargoCustomizer){
 		JsonNode doc = findWaybillNodeByNumber(ttn, from, to)
 				.orElseThrow(() -> new NovaPostApiException("Waybill with TTN " + ttn + " not found in date range " + from + " to " + to));
 

@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -73,8 +74,51 @@ public class PrintableDocument {
 		return bytes.length;
 	}
 
+	/**
+	 * Short summary for logs and the IntelliJ debugger Variables view.
+	 * Shows size, format, refs and type, never the raw bytes.
+	 */
+	@Override
+	public String toString() {
+		return "PrintableDocument{" +
+				"size=" + bytes.length + " bytes" +
+				", type=" + (isPdf() ? "PDF" : "unknown") +
+				", format=" + (format != null ? format : "none") +
+				", documentRefs=" + documentRefs +
+				'}';
+	}
+
 	public InputStream getInputStream() {
 		return new ByteArrayInputStream(bytes);
+	}
+
+	/**
+	 * Encodes the document bytes as a standard Base64 string (RFC 4648, with padding).
+	 */
+	public String toBase64() {
+		return Base64.getEncoder().encodeToString(bytes);
+	}
+
+	/**
+	 * Decodes a standard Base64 string into a document.
+	 *
+	 * @throws NullPointerException     if {@code base64} is null
+	 * @throws IllegalArgumentException if {@code base64} is blank, not valid Base64, or decodes to zero bytes
+	 */
+	public static PrintableDocument fromBase64(String base64) {
+		return fromBase64(base64, null, List.of());
+	}
+
+	/**
+	 * Decodes a standard Base64 string into a document with format and references attached.
+	 */
+	public static PrintableDocument fromBase64(String base64, PrintFormat format, List<String> documentRefs) {
+		Objects.requireNonNull(base64, "base64 must not be null");
+		if (base64.isBlank()) {
+			throw new IllegalArgumentException("Base64 content must not be blank");
+		}
+		byte[] decoded = Base64.getDecoder().decode(base64.trim());
+		return new PrintableDocument(decoded, format, documentRefs);
 	}
 
 	public Optional<PrintFormat> getFormat() {

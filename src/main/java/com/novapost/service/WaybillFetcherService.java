@@ -9,6 +9,7 @@ import com.novapost.projection.ModelProjector;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,27 +46,27 @@ public class WaybillFetcherService {
 		this.initialBackoffMs = Math.max(100, initialBackoffMs);
 	}
 
-	public List<InternetDocumentListItem> fetchAllDocuments(LocalDate from, LocalDate to) {
+	public List<InternetDocumentListItem> fetchAllDocuments(LocalDateTime from, LocalDateTime to) {
 		return fetchAllDocuments(from, to, InternetDocumentListItem.class);
 	}
 
-	public <T> List<T> fetchAllDocuments(LocalDate from, LocalDate to, Class<T> targetType) {
+	public <T> List<T> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType) {
 		List<T> result = new ArrayList<>();
 		fetchAllDocuments(from, to, targetType, result::addAll);
 		return result;
 	}
 
-	public List<Map<String, Object>> fetchAllDocuments(LocalDate from, LocalDate to, Map<String, Object> targetFields) {
+	public List<Map<String, Object>> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields) {
 		List<Map<String, Object>> result = new ArrayList<>();
 		fetchAllDocuments(from, to, targetFields, result::addAll);
 		return result;
 	}
 
-	public void fetchAllDocuments(LocalDate from, LocalDate to, Consumer<List<InternetDocumentListItem>> batchConsumer) {
+	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Consumer<List<InternetDocumentListItem>> batchConsumer) {
 		fetchAllDocuments(from, to, InternetDocumentListItem.class, batchConsumer);
 	}
 
-	public <T> void fetchAllDocuments(LocalDate from, LocalDate to, Class<T> targetType, Consumer<List<T>> batchConsumer) {
+	public <T> void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType, Consumer<List<T>> batchConsumer) {
 		Objects.requireNonNull(targetType, "targetType must not be null");
 		Objects.requireNonNull(batchConsumer, "batchConsumer must not be null");
 		fetchAllBatchesRaw(from, to, rawArray -> {
@@ -76,7 +77,7 @@ public class WaybillFetcherService {
 		});
 	}
 
-	public void fetchAllDocuments(LocalDate from, LocalDate to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer) {
+	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer) {
 		Objects.requireNonNull(targetFields, "targetFields must not be null");
 		Objects.requireNonNull(batchConsumer, "batchConsumer must not be null");
 		fetchAllBatchesRaw(from, to, rawArray -> {
@@ -87,11 +88,13 @@ public class WaybillFetcherService {
 		});
 	}
 
-	public void fetchAllBatchesRaw(LocalDate from, LocalDate to, Consumer<JsonNode> rawBatchConsumer) {
+	public void fetchAllBatchesRaw(LocalDateTime from, LocalDateTime to, Consumer<JsonNode> rawBatchConsumer) {
 		validateDateRange(from, to);
 		Objects.requireNonNull(rawBatchConsumer, "rawBatchConsumer must not be null");
 
-		for (LocalDate currentDay = from; !currentDay.isAfter(to); currentDay = currentDay.plusDays(1)) {
+		// The API works per calendar day, so iterate over dates and ignore the time part.
+		LocalDate lastDay = to.toLocalDate();
+		for (LocalDate currentDay = from.toLocalDate(); !currentDay.isAfter(lastDay); currentDay = currentDay.plusDays(1)) {
 			int page = 1;
 			while (true) {
 				JsonNode dataArray = fetchPageWithRetry(currentDay, page);
@@ -193,7 +196,7 @@ public class WaybillFetcherService {
 		}
 	}
 
-	private static void validateDateRange(LocalDate from, LocalDate to) {
+	private static void validateDateRange(LocalDateTime from, LocalDateTime to) {
 		if (from == null || to == null) {
 			throw new IllegalArgumentException("from and to dates must not be null");
 		}

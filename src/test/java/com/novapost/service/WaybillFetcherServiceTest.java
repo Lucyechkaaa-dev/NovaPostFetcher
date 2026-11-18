@@ -15,7 +15,7 @@ import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,8 +59,8 @@ public class WaybillFetcherServiceTest {
 		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, httpClient, NovaPostClient.createDefaultMapper());
 		WaybillFetcherService service = new WaybillFetcherService(client, 0); // 0ms delay for fast test
 
-		LocalDate from = LocalDate.of(2026, 8, 1);
-		LocalDate to = LocalDate.of(2026, 8, 2);
+		LocalDateTime from = LocalDateTime.of(2026, 8, 1, 0, 0);
+		LocalDateTime to = LocalDateTime.of(2026, 8, 2, 0, 0);
 
 		List<InternetDocumentListItem> documents = service.fetchAllDocuments(from, to);
 
@@ -91,7 +91,7 @@ public class WaybillFetcherServiceTest {
 		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, httpClient, NovaPostClient.createDefaultMapper());
 		WaybillFetcherService service = new WaybillFetcherService(client, 0);
 
-		LocalDate day = LocalDate.of(2026, 8, 10);
+		LocalDateTime day = LocalDateTime.of(2026, 8, 10, 0, 0);
 		List<WaybillMiniDto> dtos = service.fetchAllDocuments(day, day, WaybillMiniDto.class);
 
 		assertEquals(5, dtos.size());
@@ -112,7 +112,7 @@ public class WaybillFetcherServiceTest {
 		fields.put("IntDocNumber", null);
 		fields.put("Cost", null);
 
-		LocalDate day = LocalDate.of(2026, 8, 15);
+		LocalDateTime day = LocalDateTime.of(2026, 8, 15, 0, 0);
 		List<Map<String, Object>> results = service.fetchAllDocuments(day, day, fields);
 
 		assertEquals(3, results.size());
@@ -135,7 +135,7 @@ public class WaybillFetcherServiceTest {
 		WaybillFetcherService service = new WaybillFetcherService(client, 0);
 
 		List<Integer> batchSizes = new ArrayList<>();
-		LocalDate day = LocalDate.of(2026, 8, 20);
+		LocalDateTime day = LocalDateTime.of(2026, 8, 20, 0, 0);
 
 		service.fetchAllDocuments(day, day, (List<InternetDocumentListItem> batch) -> {
 			batchSizes.add(batch.size());
@@ -162,7 +162,7 @@ public class WaybillFetcherServiceTest {
 		NovaPostClient client = new NovaPostClient("bad-key", NovaPostClient.DEFAULT_API_URL, httpClient, NovaPostClient.createDefaultMapper());
 		WaybillFetcherService service = new WaybillFetcherService(client, 0);
 
-		LocalDate day = LocalDate.of(2026, 8, 25);
+		LocalDateTime day = LocalDateTime.of(2026, 8, 25, 0, 0);
 		NovaPostApiException ex = assertThrows(NovaPostApiException.class, () ->
 				service.fetchAllDocuments(day, day)
 		);
@@ -186,7 +186,7 @@ public class WaybillFetcherServiceTest {
 		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, httpClient, NovaPostClient.createDefaultMapper());
 		WaybillFetcherService service = new WaybillFetcherService(client, null, 0, 3, 50);
 
-		LocalDate day = LocalDate.of(2026, 8, 26);
+		LocalDateTime day = LocalDateTime.of(2026, 8, 26, 0, 0);
 		List<InternetDocumentListItem> docs = service.fetchAllDocuments(day, day);
 
 		assertEquals(10, docs.size());
@@ -198,9 +198,9 @@ public class WaybillFetcherServiceTest {
 		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, new MockScriptedHttpClient((r, b) -> ""), NovaPostClient.createDefaultMapper());
 		WaybillFetcherService service = new WaybillFetcherService(client, 0);
 
-		assertThrows(IllegalArgumentException.class, () -> service.fetchAllDocuments(null, LocalDate.now()));
-		assertThrows(IllegalArgumentException.class, () -> service.fetchAllDocuments(LocalDate.now(), null));
-		assertThrows(IllegalArgumentException.class, () -> service.fetchAllDocuments(LocalDate.of(2026, 9, 10), LocalDate.of(2026, 9, 1)));
+		assertThrows(IllegalArgumentException.class, () -> service.fetchAllDocuments(null, LocalDateTime.now()));
+		assertThrows(IllegalArgumentException.class, () -> service.fetchAllDocuments(LocalDateTime.now(), null));
+		assertThrows(IllegalArgumentException.class, () -> service.fetchAllDocuments(LocalDateTime.of(2026, 9, 10, 0, 0), LocalDateTime.of(2026, 9, 1, 0, 0)));
 	}
 
 	static String generateResponseJson(int count, String prefix) {

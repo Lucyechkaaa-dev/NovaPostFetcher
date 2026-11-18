@@ -10,6 +10,7 @@ import com.novapost.model.InternetDocumentSaveRequest;
 import com.novapost.model.ParticipantRouting;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -90,7 +91,7 @@ public class WaybillLifecycleService {
 	 * Automatically fetches the existing document JSON, preserves all sender/recipient routing,
 	 * applies the new cargo details, and commits the update to Nova Post.
 	 */
-	public InternetDocumentResponse updateCargo(String ttn, LocalDate searchFrom, LocalDate searchTo, CargoDetails newCargo) {
+	public InternetDocumentResponse updateCargo(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo) {
 		Objects.requireNonNull(ttn, "TTN must not be null");
 		Objects.requireNonNull(newCargo, "CargoDetails must not be null");
 
@@ -101,8 +102,8 @@ public class WaybillLifecycleService {
 	 * Convenience overload searching up to 30 days in the past.
 	 */
 	public InternetDocumentResponse updateCargo(String ttn, CargoDetails newCargo) {
-		LocalDate to = LocalDate.now();
-		LocalDate from = to.minusDays(30);
+		LocalDateTime to = LocalDateTime.now();
+		LocalDateTime from = to.minusDays(30);
 		return updateCargo(ttn, from, to, newCargo);
 	}
 
@@ -110,7 +111,7 @@ public class WaybillLifecycleService {
 	 * Updates cargo details by document UUID Ref directly.
 	 * Fetches the document from account waybills, merges cargo, and updates.
 	 */
-	public InternetDocumentResponse updateCargoByRef(String documentRef, LocalDate searchFrom, LocalDate searchTo, CargoDetails newCargo) {
+	public InternetDocumentResponse updateCargoByRef(String documentRef, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo) {
 		Objects.requireNonNull(documentRef, "documentRef must not be null");
 		Objects.requireNonNull(newCargo, "CargoDetails must not be null");
 
@@ -126,7 +127,7 @@ public class WaybillLifecycleService {
 	/**
 	 * Fluent partial update using a customizer callback.
 	 */
-	public InternetDocumentResponse update(String ttn, LocalDate searchFrom, LocalDate searchTo, Consumer<InternetDocumentSaveRequest.Builder> customizer) {
+	public InternetDocumentResponse update(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, Consumer<InternetDocumentSaveRequest.Builder> customizer) {
 		return controller.updateWaybillCargoByNumber(ttn, searchFrom, searchTo, customizer);
 	}
 
@@ -134,8 +135,8 @@ public class WaybillLifecycleService {
 	 * Convenience update overload using standard 30-day window.
 	 */
 	public InternetDocumentResponse update(String ttn, Consumer<InternetDocumentSaveRequest.Builder> customizer) {
-		LocalDate to = LocalDate.now();
-		LocalDate from = to.minusDays(30);
+		LocalDateTime to = LocalDateTime.now();
+		LocalDateTime from = to.minusDays(30);
 		return update(ttn, from, to, customizer);
 	}
 
@@ -149,8 +150,8 @@ public class WaybillLifecycleService {
 	/**
 	 * Deletes an existing waybill by its TTN number by resolving its Ref first.
 	 */
-	public boolean deleteByTtn(String ttn, LocalDate searchFrom, LocalDate searchTo) {
-		Optional<InternetDocumentListItem> item = controller.findWaybillByNumber(ttn, searchFrom, searchTo);
+	public boolean deleteByTtn(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo) {
+		Optional<InternetDocumentListItem> item = controller.fetchWaybillByTtn(ttn, searchFrom, searchTo);
 		if (item.isEmpty() || item.get().ref() == null) {
 			throw new NovaPostApiException("Cannot delete waybill: TTN " + ttn + " not found in date range " + searchFrom + " to " + searchTo);
 		}
@@ -161,8 +162,8 @@ public class WaybillLifecycleService {
 	 * Convenience delete overload searching within the past 30 days.
 	 */
 	public boolean deleteByTtn(String ttn) {
-		LocalDate to = LocalDate.now();
-		LocalDate from = to.minusDays(30);
+		LocalDateTime to = LocalDateTime.now();
+		LocalDateTime from = to.minusDays(30);
 		return deleteByTtn(ttn, from, to);
 	}
 

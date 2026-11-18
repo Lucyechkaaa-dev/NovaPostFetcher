@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -17,18 +18,19 @@ public record InternetDocumentListFilter(
 ){
 
 	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
 
-	public static InternetDocumentListFilter byDateRange(LocalDate from, LocalDate to, int page, int limit){
-		String fromStr = from != null ? from.format(DATE_FORMATTER) : null;
-		String toStr = to != null ? to.format(DATE_FORMATTER) : null;
+	public static InternetDocumentListFilter byDateRange(LocalDateTime from, LocalDateTime to, int page, int limit){
+		String fromStr = from != null ? from.format(DATE_TIME_FORMATTER) : null;
+		String toStr = to != null ? to.format(DATE_TIME_FORMATTER) : null;
 		return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, 1);
 	}
 
-  public static InternetDocumentListFilter byDateRange(LocalDate from, LocalDate to, int page, int limit, boolean getFullList){
-    String fromStr = from != null ? from.format(DATE_FORMATTER) : null;
-    String toStr = to != null ? to.format(DATE_FORMATTER) : null;
-    return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, getFullList ? 1 : 0);
-  }
+	public static InternetDocumentListFilter byDateRange(LocalDateTime from, LocalDateTime to, int page, int limit, boolean getFullList){
+		String fromStr = from != null ? from.format(DATE_TIME_FORMATTER) : null;
+		String toStr = to != null ? to.format(DATE_TIME_FORMATTER) : null;
+		return new InternetDocumentListFilter(null, fromStr, toStr, page, limit, getFullList ? 1 : 0);
+	}
 
 	public static InternetDocumentListFilter byDay(LocalDate day, int page, int limit){
 		if(day == null){

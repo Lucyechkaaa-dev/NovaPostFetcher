@@ -16,7 +16,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,12 +154,12 @@ public class NovaPostControllerProjectionTest {
 		fields.put("IntDocNumber", null);
 		fields.put("Cost", null);
 
-		List<Map<String, Object>> mapResults = controller.getWaybills(LocalDate.now().minusDays(3), LocalDate.now(), fields);
+		List<Map<String, Object>> mapResults = controller.getWaybills(LocalDateTime.now().minusDays(3), LocalDateTime.now(), fields);
 		assertEquals(1, mapResults.size());
 		assertEquals("20450000000001", mapResults.getFirst().get("IntDocNumber"));
 		assertEquals("150.50", mapResults.getFirst().get("Cost"));
 
-		List<WaybillSummaryDto> dtoList = controller.getWaybills(LocalDate.now().minusDays(3), LocalDate.now(), WaybillSummaryDto.class);
+		List<WaybillSummaryDto> dtoList = controller.getWaybills(LocalDateTime.now().minusDays(3), LocalDateTime.now(), WaybillSummaryDto.class);
 		assertEquals(1, dtoList.size());
 		assertEquals("doc-ref-100", dtoList.getFirst().ref());
 		assertEquals("20450000000001", dtoList.getFirst().documentNumber());
@@ -230,13 +230,13 @@ public class NovaPostControllerProjectionTest {
 		fields.put("RecipientAddressDescription", null);
 		fields.put("CustomNovaPostTrackingCode", null);
 
-		List<Map<String, Object>> mapResults = controller.getWaybills(LocalDate.now().minusDays(1), LocalDate.now(), fields);
+		List<Map<String, Object>> mapResults = controller.getWaybills(LocalDateTime.now().minusDays(1), LocalDateTime.now(), fields);
 		assertEquals(1, mapResults.size());
 		assertEquals("Khreshchatyk 10", mapResults.getFirst().get("RecipientAddressDescription"));
 		assertEquals("TRACK-XYZ-999", mapResults.getFirst().get("CustomNovaPostTrackingCode"));
 		assertFalse(mapResults.getFirst().containsKey("IgnoredExtraField1"));
 
-		List<ExtendedWaybillDto> dtoList = controller.getWaybills(LocalDate.now().minusDays(1), LocalDate.now(), ExtendedWaybillDto.class);
+		List<ExtendedWaybillDto> dtoList = controller.getWaybills(LocalDateTime.now().minusDays(1), LocalDateTime.now(), ExtendedWaybillDto.class);
 		assertEquals(1, dtoList.size());
 		assertEquals("20450000009999", dtoList.getFirst().intDocNumber());
 		assertEquals("Khreshchatyk 10", dtoList.getFirst().recipientAddressDescription());

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,7 +82,7 @@ public class TtnFetchAndUpdateTest{
 
 		System.out.println("--- 1. Fetching tracking details for TTN: " + TARGET_TTN + " ---");
 
-		JsonNode trackingData = client.getTracking(TARGET_TTN);
+		JsonNode trackingData = client.getTrackingNode(TARGET_TTN);
 		assertNotNull(trackingData, "Tracking response data should not be null");
 		assertTrue(trackingData.isArray(), "Tracking data should be a JSON array");
 		assertFalse(trackingData.isEmpty(), "Tracking data should contain at least one document");
@@ -123,10 +124,10 @@ public class TtnFetchAndUpdateTest{
 				"Skipping account waybills lookup: Please specify your API_KEY in the class constant field.");
 
 		System.out.println("--- 2. Searching for TTN " + TARGET_TTN + " in account waybills ---");
-		LocalDate from = LocalDate.now().minusDays(30);
-		LocalDate to = LocalDate.now();
+		LocalDateTime from = LocalDateTime.now().minusDays(30);
+		LocalDateTime to = LocalDateTime.now();
 
-		Optional<InternetDocumentListItem> found = controller.findWaybillByNumber(TARGET_TTN, from, to);
+		Optional<InternetDocumentListItem> found = controller.fetchWaybillByTtn(TARGET_TTN, from, to);
 		if(found.isPresent()){
 			InternetDocumentListItem item = found.get();
 			System.out.println("Found waybill under account!");
@@ -194,8 +195,8 @@ public class TtnFetchAndUpdateTest{
 		Assumptions.assumeTrue(isApiKeyProvided(),
 				"Skipping live update: Please write your API key into API_KEY constant field.");
 
-		LocalDate from = LocalDate.now().minusDays(30);
-		LocalDate to = LocalDate.now();
+		LocalDateTime from = LocalDateTime.now().minusDays(30);
+		LocalDateTime to = LocalDateTime.now();
 
 		System.out.println("Executing merged live update for TTN: " + TARGET_TTN);
 		InternetDocumentResponse response = controller.updateWaybillCargoByNumber(TARGET_TTN, from, to, builder -> {
