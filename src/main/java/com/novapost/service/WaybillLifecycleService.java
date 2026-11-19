@@ -3,11 +3,7 @@ package com.novapost.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.controller.NovaPostApiException;
 import com.novapost.controller.NovaPostController;
-import com.novapost.model.CargoDetails;
-import com.novapost.model.InternetDocumentListItem;
-import com.novapost.model.InternetDocumentResponse;
-import com.novapost.model.InternetDocumentSaveRequest;
-import com.novapost.model.ParticipantRouting;
+import com.novapost.model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,38 +17,33 @@ import java.util.function.Consumer;
  * 1. Initial creation with participant sender/recipient details and temporary placeholder cargo.
  * 2. Subsequent updates of cargo weight, dimensions, and declared cost by warehouse coworkers.
  */
-public class WaybillLifecycleService {
+public record WaybillLifecycleService(NovaPostController controller){
 
-	private final NovaPostController controller;
-
-	public WaybillLifecycleService(NovaPostController controller) {
+	public WaybillLifecycleService(NovaPostController controller){
 		this.controller = Objects.requireNonNull(controller, "NovaPostController must not be null");
 	}
 
-	public static WaybillLifecycleService create(String apiKey) {
+	public static WaybillLifecycleService create(String apiKey){
 		return new WaybillLifecycleService(NovaPostController.create(apiKey));
 	}
 
-	public static WaybillLifecycleService create(NovaPostController controller) {
+	public static WaybillLifecycleService create(NovaPostController controller){
 		return new WaybillLifecycleService(controller);
 	}
 
-	public NovaPostController getController() {
-		return controller;
-	}
 
 	/**
 	 * Creates a waybill draft with participant sender/recipient routing and placeholder cargo values.
 	 * Allows a sales or support agent to register the shipment before physical weight and seats are packed.
 	 */
-	public InternetDocumentResponse createDraft(ParticipantRouting routing) {
+	public InternetDocumentResponse createDraft(ParticipantRouting routing){
 		return createWaybill(routing, CargoDetails.ofPlaceholder());
 	}
 
 	/**
 	 * Creates a full waybill with both routing details and specified cargo parameters in a single step.
 	 */
-	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo) {
+	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo){
 		Objects.requireNonNull(routing, "ParticipantRouting must not be null");
 		CargoDetails effectiveCargo = cargo != null ? cargo : CargoDetails.ofPlaceholder();
 
@@ -91,7 +82,7 @@ public class WaybillLifecycleService {
 	 * Automatically fetches the existing document JSON, preserves all sender/recipient routing,
 	 * applies the new cargo details, and commits the update to Nova Post.
 	 */
-	public InternetDocumentResponse updateCargo(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo) {
+	public InternetDocumentResponse updateCargo(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo){
 		Objects.requireNonNull(ttn, "TTN must not be null");
 		Objects.requireNonNull(newCargo, "CargoDetails must not be null");
 
@@ -101,7 +92,7 @@ public class WaybillLifecycleService {
 	/**
 	 * Convenience overload searching up to 30 days in the past.
 	 */
-	public InternetDocumentResponse updateCargo(String ttn, CargoDetails newCargo) {
+	public InternetDocumentResponse updateCargo(String ttn, CargoDetails newCargo){
 		LocalDateTime to = LocalDateTime.now();
 		LocalDateTime from = to.minusDays(30);
 		return updateCargo(ttn, from, to, newCargo);
@@ -111,7 +102,7 @@ public class WaybillLifecycleService {
 	 * Updates cargo details by document UUID Ref directly.
 	 * Fetches the document from account waybills, merges cargo, and updates.
 	 */
-	public InternetDocumentResponse updateCargoByRef(String documentRef, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo) {
+	public InternetDocumentResponse updateCargoByRef(String documentRef, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo){
 		Objects.requireNonNull(documentRef, "documentRef must not be null");
 		Objects.requireNonNull(newCargo, "CargoDetails must not be null");
 
@@ -127,14 +118,14 @@ public class WaybillLifecycleService {
 	/**
 	 * Fluent partial update using a customizer callback.
 	 */
-	public InternetDocumentResponse update(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, Consumer<InternetDocumentSaveRequest.Builder> customizer) {
+	public InternetDocumentResponse update(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, Consumer<InternetDocumentSaveRequest.Builder> customizer){
 		return controller.updateWaybillCargoByNumber(ttn, searchFrom, searchTo, customizer);
 	}
 
 	/**
 	 * Convenience update overload using standard 30-day window.
 	 */
-	public InternetDocumentResponse update(String ttn, Consumer<InternetDocumentSaveRequest.Builder> customizer) {
+	public InternetDocumentResponse update(String ttn, Consumer<InternetDocumentSaveRequest.Builder> customizer){
 		LocalDateTime to = LocalDateTime.now();
 		LocalDateTime from = to.minusDays(30);
 		return update(ttn, from, to, customizer);
@@ -143,16 +134,16 @@ public class WaybillLifecycleService {
 	/**
 	 * Deletes an existing waybill by its document UUID Ref.
 	 */
-	public boolean deleteByRef(String documentRef) {
+	public boolean deleteByRef(String documentRef){
 		return controller.deleteWaybill(documentRef);
 	}
 
 	/**
 	 * Deletes an existing waybill by its TTN number by resolving its Ref first.
 	 */
-	public boolean deleteByTtn(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo) {
+	public boolean deleteByTtn(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo){
 		Optional<InternetDocumentListItem> item = controller.fetchWaybillByTtn(ttn, searchFrom, searchTo);
-		if (item.isEmpty() || item.get().ref() == null) {
+		if(item.isEmpty() || item.get().ref() == null){
 			throw new NovaPostApiException("Cannot delete waybill: TTN " + ttn + " not found in date range " + searchFrom + " to " + searchTo);
 		}
 		return deleteByRef(item.get().ref());
@@ -161,19 +152,19 @@ public class WaybillLifecycleService {
 	/**
 	 * Convenience delete overload searching within the past 30 days.
 	 */
-	public boolean deleteByTtn(String ttn) {
+	public boolean deleteByTtn(String ttn){
 		LocalDateTime to = LocalDateTime.now();
 		LocalDateTime from = to.minusDays(30);
 		return deleteByTtn(ttn, from, to);
 	}
 
-	private static void applyCargo(InternetDocumentSaveRequest.Builder builder, CargoDetails cargo) {
-		if (cargo.cargoType() != null) builder.cargoType(cargo.cargoType());
-		if (cargo.description() != null) builder.description(cargo.description());
-		if (cargo.weight() != null) builder.weight(cargo.weight());
-		if (cargo.cost() != null) builder.cost(cargo.cost());
-		if (cargo.seatsAmount() != null) builder.seatsAmount(cargo.seatsAmount());
-		if (cargo.volumeGeneral() != null) builder.volumeGeneral(cargo.volumeGeneral());
-		if (cargo.optionsSeat() != null) builder.optionsSeat(cargo.optionsSeat());
+	private static void applyCargo(InternetDocumentSaveRequest.Builder builder, CargoDetails cargo){
+		if(cargo.cargoType() != null) builder.cargoType(cargo.cargoType());
+		if(cargo.description() != null) builder.description(cargo.description());
+		if(cargo.weight() != null) builder.weight(cargo.weight());
+		if(cargo.cost() != null) builder.cost(cargo.cost());
+		if(cargo.seatsAmount() != null) builder.seatsAmount(cargo.seatsAmount());
+		if(cargo.volumeGeneral() != null) builder.volumeGeneral(cargo.volumeGeneral());
+		if(cargo.optionsSeat() != null) builder.optionsSeat(cargo.optionsSeat());
 	}
 }

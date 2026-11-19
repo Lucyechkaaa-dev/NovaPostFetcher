@@ -29,7 +29,7 @@ public class NovaPostSyncService{
 	}
 
 	public NovaPostSyncService(NovaPostClient client, DatabaseManager databaseManager, WaybillFetcherService waybillFetcherService){
-		this(client, databaseManager, waybillFetcherService, waybillFetcherService != null ? waybillFetcherService.getThrottleDelayMs() : com.novapost.config.AppConfig.DEFAULT_PAGE_DELAY_MS);
+		this(client, databaseManager, waybillFetcherService, waybillFetcherService != null ? waybillFetcherService.throttleDelayMs() : com.novapost.config.AppConfig.DEFAULT_PAGE_DELAY_MS);
 	}
 
 	public NovaPostSyncService(NovaPostClient client, DatabaseManager databaseManager, WaybillFetcherService waybillFetcherService, long pageDelayMs){

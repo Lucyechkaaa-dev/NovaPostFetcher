@@ -3,10 +3,11 @@ package com.novapost;
 import com.novapost.client.NovaPostClient;
 import com.novapost.controller.NovaPostApiException;
 import com.novapost.controller.NovaPostController;
-import com.novapost.model.PrintFormat;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSession;
 import java.net.Authenticator;
 import java.net.CookieHandler;
 import java.net.ProxySelector;
@@ -17,14 +18,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSession;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -121,24 +118,32 @@ class NovaPostPrintMarkingTest {
 		@Override public Optional<Executor> executor() { return Optional.empty(); }
 	}
 
-	private static class MockHttpResponse<T> implements HttpResponse<T> {
-		private final int statusCode;
-		private final T body;
-		private final HttpRequest request;
+	private record MockHttpResponse<T>(int statusCode, T body, HttpRequest request) implements HttpResponse<T>{
 
-		public MockHttpResponse(int statusCode, T body, HttpRequest request) {
-			this.statusCode = statusCode;
-			this.body = body;
-			this.request = request;
+
+		@Override
+		public Optional<HttpResponse<T>> previousResponse(){
+			return Optional.empty();
 		}
 
-		@Override public int statusCode() { return statusCode; }
-		@Override public HttpRequest request() { return request; }
-		@Override public Optional<HttpResponse<T>> previousResponse() { return Optional.empty(); }
-		@Override public HttpHeaders headers() { return HttpHeaders.of(Map.of(), (k, v) -> true); }
-		@Override public T body() { return body; }
-		@Override public Optional<SSLSession> sslSession() { return Optional.empty(); }
-		@Override public URI uri() { return request.uri(); }
-		@Override public HttpClient.Version version() { return HttpClient.Version.HTTP_2; }
+		@Override
+		public HttpHeaders headers(){
+			return HttpHeaders.of(Map.of(), (k, v) -> true);
+		}
+
+		@Override
+		public Optional<SSLSession> sslSession(){
+			return Optional.empty();
+		}
+
+		@Override
+		public URI uri(){
+			return request.uri();
+		}
+
+		@Override
+		public HttpClient.Version version(){
+			return HttpClient.Version.HTTP_2;
+		}
 	}
 }

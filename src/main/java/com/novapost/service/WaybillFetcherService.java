@@ -16,7 +16,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public class WaybillFetcherService {
+public record WaybillFetcherService(NovaPostClient client, ModelProjector projector, long throttleDelayMs,
+                                    int maxRetries, long initialBackoffMs){
 
 	private static final System.Logger LOGGER = System.getLogger(WaybillFetcherService.class.getName());
 	public static final int PAGE_LIMIT = 100;
@@ -24,21 +25,15 @@ public class WaybillFetcherService {
 	public static final int DEFAULT_MAX_RETRIES = 5;
 	public static final long DEFAULT_INITIAL_BACKOFF_MS = 1000;
 
-	private final NovaPostClient client;
-	private final ModelProjector projector;
-	private final long throttleDelayMs;
-	private final int maxRetries;
-	private final long initialBackoffMs;
-
-	public WaybillFetcherService(NovaPostClient client) {
+	public WaybillFetcherService(NovaPostClient client){
 		this(client, ModelProjector.getInstance(), DEFAULT_THROTTLE_DELAY_MS, DEFAULT_MAX_RETRIES, DEFAULT_INITIAL_BACKOFF_MS);
 	}
 
-	public WaybillFetcherService(NovaPostClient client, long throttleDelayMs) {
+	public WaybillFetcherService(NovaPostClient client, long throttleDelayMs){
 		this(client, ModelProjector.getInstance(), throttleDelayMs, DEFAULT_MAX_RETRIES, DEFAULT_INITIAL_BACKOFF_MS);
 	}
 
-	public WaybillFetcherService(NovaPostClient client, ModelProjector projector, long throttleDelayMs, int maxRetries, long initialBackoffMs) {
+	public WaybillFetcherService(NovaPostClient client, ModelProjector projector, long throttleDelayMs, int maxRetries, long initialBackoffMs){
 		this.client = Objects.requireNonNull(client, "client must not be null");
 		this.projector = projector != null ? projector : ModelProjector.getInstance();
 		this.throttleDelayMs = Math.max(0, throttleDelayMs);
@@ -46,66 +41,66 @@ public class WaybillFetcherService {
 		this.initialBackoffMs = Math.max(100, initialBackoffMs);
 	}
 
-	public List<InternetDocumentListItem> fetchAllDocuments(LocalDateTime from, LocalDateTime to) {
+	public List<InternetDocumentListItem> fetchAllDocuments(LocalDateTime from, LocalDateTime to){
 		return fetchAllDocuments(from, to, InternetDocumentListItem.class);
 	}
 
-	public <T> List<T> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType) {
+	public <T> List<T> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType){
 		List<T> result = new ArrayList<>();
 		fetchAllDocuments(from, to, targetType, result::addAll);
 		return result;
 	}
 
-	public List<Map<String, Object>> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields) {
+	public List<Map<String, Object>> fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields){
 		List<Map<String, Object>> result = new ArrayList<>();
 		fetchAllDocuments(from, to, targetFields, result::addAll);
 		return result;
 	}
 
-	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Consumer<List<InternetDocumentListItem>> batchConsumer) {
+	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Consumer<List<InternetDocumentListItem>> batchConsumer){
 		fetchAllDocuments(from, to, InternetDocumentListItem.class, batchConsumer);
 	}
 
-	public <T> void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType, Consumer<List<T>> batchConsumer) {
+	public <T> void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Class<T> targetType, Consumer<List<T>> batchConsumer){
 		Objects.requireNonNull(targetType, "targetType must not be null");
 		Objects.requireNonNull(batchConsumer, "batchConsumer must not be null");
 		fetchAllBatchesRaw(from, to, rawArray -> {
 			List<T> batch = projector.projectJsonArrayToClass(rawArray, targetType);
-			if (!batch.isEmpty()) {
+			if(!batch.isEmpty()){
 				batchConsumer.accept(batch);
 			}
 		});
 	}
 
-	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer) {
+	public void fetchAllDocuments(LocalDateTime from, LocalDateTime to, Map<String, Object> targetFields, Consumer<List<Map<String, Object>>> batchConsumer){
 		Objects.requireNonNull(targetFields, "targetFields must not be null");
 		Objects.requireNonNull(batchConsumer, "batchConsumer must not be null");
 		fetchAllBatchesRaw(from, to, rawArray -> {
 			List<Map<String, Object>> batch = projector.projectJsonArrayToMap(rawArray, targetFields);
-			if (!batch.isEmpty()) {
+			if(!batch.isEmpty()){
 				batchConsumer.accept(batch);
 			}
 		});
 	}
 
-	public void fetchAllBatchesRaw(LocalDateTime from, LocalDateTime to, Consumer<JsonNode> rawBatchConsumer) {
+	public void fetchAllBatchesRaw(LocalDateTime from, LocalDateTime to, Consumer<JsonNode> rawBatchConsumer){
 		validateDateRange(from, to);
 		Objects.requireNonNull(rawBatchConsumer, "rawBatchConsumer must not be null");
 
 		// The API works per calendar day, so iterate over dates and ignore the time part.
 		LocalDate lastDay = to.toLocalDate();
-		for (LocalDate currentDay = from.toLocalDate(); !currentDay.isAfter(lastDay); currentDay = currentDay.plusDays(1)) {
+		for(LocalDate currentDay = from.toLocalDate(); !currentDay.isAfter(lastDay); currentDay = currentDay.plusDays(1)){
 			int page = 1;
-			while (true) {
+			while(true){
 				JsonNode dataArray = fetchPageWithRetry(currentDay, page);
 
-				if (dataArray == null || !dataArray.isArray() || dataArray.isEmpty()) {
+				if(dataArray == null || !dataArray.isArray() || dataArray.isEmpty()){
 					break;
 				}
 
 				rawBatchConsumer.accept(dataArray);
 
-				if (dataArray.size() < PAGE_LIMIT) {
+				if(dataArray.size() < PAGE_LIMIT){
 					break;
 				}
 
@@ -116,15 +111,15 @@ public class WaybillFetcherService {
 		}
 	}
 
-	private JsonNode fetchPageWithRetry(LocalDate day, int page) {
+	private JsonNode fetchPageWithRetry(LocalDate day, int page){
 		InternetDocumentListFilter filter = InternetDocumentListFilter.byDay(day, page, PAGE_LIMIT);
 
 		long backoff = initialBackoffMs;
-		for (int attempt = 1; attempt <= maxRetries; attempt++) {
-			try {
+		for(int attempt = 1; attempt <= maxRetries; attempt++){
+			try{
 				JsonNode root = client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter);
 
-				if (root == null || root.isMissingNode()) {
+				if(root == null || root.isMissingNode()){
 					LOGGER.log(System.Logger.Level.WARNING, "Received empty JSON root for day {0} page {1}", day, page);
 					return null;
 				}
@@ -133,10 +128,10 @@ public class WaybillFetcherService {
 				JsonNode errorsNode = root.path("errors");
 				boolean hasErrors = !success || (errorsNode.isArray() && !errorsNode.isEmpty());
 
-				if (hasErrors) {
+				if(hasErrors){
 					List<String> errors = new ArrayList<>();
-					if (errorsNode.isArray()) {
-						for (JsonNode err : errorsNode) {
+					if(errorsNode.isArray()){
+						for(JsonNode err : errorsNode){
 							errors.add(err.asText());
 						}
 					}
@@ -144,7 +139,7 @@ public class WaybillFetcherService {
 					boolean isRateLimit = errors.stream().anyMatch(e -> e != null &&
 							(e.toLowerCase().contains("to many requests") || e.toLowerCase().contains("too many requests")));
 
-					if (isRateLimit && attempt < maxRetries) {
+					if(isRateLimit && attempt < maxRetries){
 						LOGGER.log(System.Logger.Level.WARNING, "Rate limit hit for day {0} page {1}. Retrying in {2}ms (attempt {3}/{4})...",
 								day, page, backoff, attempt, maxRetries);
 						sleep(backoff);
@@ -159,13 +154,14 @@ public class WaybillFetcherService {
 
 				return root.path("data");
 
-			} catch (IOException | InterruptedException e) {
-				if (e instanceof InterruptedException) {
+			}
+			catch(IOException | InterruptedException e){
+				if(e instanceof InterruptedException){
 					Thread.currentThread().interrupt();
 					throw new RuntimeException("Thread interrupted while fetching waybills for date " + day + " page " + page, e);
 				}
 
-				if (attempt == maxRetries) {
+				if(attempt == maxRetries){
 					LOGGER.log(System.Logger.Level.ERROR, "Failed to fetch waybills for date {0} page {1} after {2} attempts: {3}",
 							day, page, maxRetries, e.getMessage());
 					throw new NovaPostApiException("Failed to fetch waybills for date " + day + " page " + page + " after " + maxRetries + " attempts: " + e.getMessage(), e);
@@ -181,47 +177,30 @@ public class WaybillFetcherService {
 		throw new NovaPostApiException("Failed to fetch waybills for date " + day + " page " + page + " after " + maxRetries + " attempts");
 	}
 
-	private void applyThrottling() {
-		if (throttleDelayMs > 0) {
+	private void applyThrottling(){
+		if(throttleDelayMs > 0){
 			sleep(throttleDelayMs);
 		}
 	}
 
-	private void sleep(long millis) {
-		try {
+	private void sleep(long millis){
+		try{
 			Thread.sleep(millis);
-		} catch (InterruptedException e) {
+		}
+		catch(InterruptedException e){
 			Thread.currentThread().interrupt();
 			throw new RuntimeException("Thread interrupted during sleep", e);
 		}
 	}
 
-	private static void validateDateRange(LocalDateTime from, LocalDateTime to) {
-		if (from == null || to == null) {
+	private static void validateDateRange(LocalDateTime from, LocalDateTime to){
+		if(from == null || to == null){
 			throw new IllegalArgumentException("from and to dates must not be null");
 		}
-		if (from.isAfter(to)) {
+		if(from.isAfter(to)){
 			throw new IllegalArgumentException("from date (" + from + ") must not be after to date (" + to + ")");
 		}
 	}
 
-	public NovaPostClient getClient() {
-		return client;
-	}
 
-	public ModelProjector getProjector() {
-		return projector;
-	}
-
-	public long getThrottleDelayMs() {
-		return throttleDelayMs;
-	}
-
-	public int getMaxRetries() {
-		return maxRetries;
-	}
-
-	public long getInitialBackoffMs() {
-		return initialBackoffMs;
-	}
 }
