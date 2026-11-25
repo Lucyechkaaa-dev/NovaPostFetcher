@@ -59,15 +59,15 @@ public class WaybillLifecycleServiceTest{
 						      "Description": "Goods",
 						      "Cost": "300",
 						      "Weight": "1.0",
-						      "CitySender": "city-sender-uuid",
-						      "Sender": "sender-uuid",
-						      "SenderAddress": "sender-addr-uuid",
-						      "ContactSender": "contact-sender-uuid",
+						      "CitySender": "city-senderRef-uuid",
+						      "Sender": "senderRef-uuid",
+						      "SenderAddress": "senderRef-addr-uuid",
+						      "ContactSender": "contact-senderRef-uuid",
 						      "SendersPhone": "+380501112233",
-						      "CityRecipient": "city-recipient-uuid",
-						      "Recipient": "recipient-uuid",
-						      "RecipientAddress": "recipient-addr-uuid",
-						      "ContactRecipient": "contact-recipient-uuid",
+						      "CityRecipient": "city-recipientRef-uuid",
+						      "Recipient": "recipientRef-uuid",
+						      "RecipientAddress": "recipientRef-addr-uuid",
+						      "ContactRecipient": "contact-recipientRef-uuid",
 						      "RecipientsPhone": "+380509998877"
 						    }
 						  ],
@@ -118,15 +118,15 @@ public class WaybillLifecycleServiceTest{
 
 		// Stage 1: Coworker A creates parcel draft with participant routing
 		ParticipantRouting routing = ParticipantRouting.builder()
-				.citySender("city-sender-uuid")
-				.sender("sender-uuid")
-				.senderAddress("sender-addr-uuid")
-				.contactSender("contact-sender-uuid")
+				.citySenderRef("city-senderRef-uuid")
+				.senderRef("senderRef-uuid")
+				.senderAddressRef("senderRef-addr-uuid")
+				.contactSenderRef("contact-senderRef-uuid")
 				.sendersPhone("+380501112233")
-				.cityRecipient("city-recipient-uuid")
-				.recipient("recipient-uuid")
-				.recipientAddress("recipient-addr-uuid")
-				.contactRecipient("contact-recipient-uuid")
+				.cityRecipientRef("city-recipientRef-uuid")
+				.recipientRef("recipientRef-uuid")
+				.recipientAddressRef("recipientRef-addr-uuid")
+				.contactRecipientRef("contact-recipientRef-uuid")
 				.recipientsPhone("+380509998877")
 				.build();
 
@@ -139,8 +139,8 @@ public class WaybillLifecycleServiceTest{
 		// Verify that initial save had placeholder cargo
 		String saveBody = capturedBodies.get(0);
 		assertTrue(saveBody.contains("\"calledMethod\":\"save\""));
-		assertTrue(saveBody.contains("\"city-sender-uuid\""));
-		assertTrue(saveBody.contains("\"recipient-uuid\""));
+		assertTrue(saveBody.contains("\"city-senderRef-uuid\""));
+		assertTrue(saveBody.contains("\"recipientRef-uuid\""));
 		assertTrue(saveBody.contains("\"Weight\":\"1.0\""));
 
 		// Stage 2: Coworker B at the packing station measures weight and box dimensions, then updates parcel
@@ -153,9 +153,9 @@ public class WaybillLifecycleServiceTest{
 		// Verify that update preserved all original routing AND added physical box dimensions
 		String updateBody = capturedBodies.get(capturedBodies.size() - 1);
 		assertTrue(updateBody.contains("\"calledMethod\":\"update\""));
-		assertTrue(updateBody.contains("\"city-sender-uuid\""));
-		assertTrue(updateBody.contains("\"sender-addr-uuid\""));
-		assertTrue(updateBody.contains("\"recipient-addr-uuid\""));
+		assertTrue(updateBody.contains("\"city-senderRef-uuid\""));
+		assertTrue(updateBody.contains("\"senderRef-addr-uuid\""));
+		assertTrue(updateBody.contains("\"recipientRef-addr-uuid\""));
 		assertTrue(updateBody.contains("\"Weight\":\"5.5\""));
 		assertTrue(updateBody.contains("\"Description\":\"Auto parts & filters\""));
 		assertTrue(updateBody.contains("\"Cost\":\"1800\""));

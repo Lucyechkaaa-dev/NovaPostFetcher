@@ -21,8 +21,8 @@ public class InternetDocumentModelsTest {
         InternetDocumentSaveRequest saveReq = new InternetDocumentSaveRequest(
             null, "Sender", "Cash", LocalDate.of(2026, 4, 20), "Parcel", null, "1.5",
             "WarehouseWarehouse", "1", "Electronics", "500",
-            "city-sender-ref", "sender-ref", "sender-addr-ref", "contact-sender-ref", "+380501112233",
-            "city-recipient-ref", "recipient-ref", "recipient-addr-ref", "contact-recipient-ref", "+380509998877",
+            "city-senderRef-ref", "senderRef-ref", "senderRef-addr-ref", "contact-senderRef-ref", "+380501112233",
+            "city-recipientRef-ref", "recipientRef-ref", "recipientRef-addr-ref", "contact-recipientRef-ref", "+380509998877",
             null, null
         );
 

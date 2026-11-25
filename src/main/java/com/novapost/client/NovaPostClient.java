@@ -113,7 +113,7 @@ public class NovaPostClient{
 		return getTracking(ttn, "");
 	}
 
-	/** Tracking statuses for one TTN, with the recipient phone when Nova Post requires it. */
+	/** Tracking statuses for one TTN, with the recipientRef phone when Nova Post requires it. */
 	public List<TrackingStatus> getTracking(String ttn, String phone) throws IOException, InterruptedException{
 		return toTrackingStatuses(getTrackingNode(ttn, phone));
 	}

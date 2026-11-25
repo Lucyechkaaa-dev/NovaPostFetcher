@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * High-level ergonomic lifecycle manager for Nova Post InternetDocuments (Waybills).
  * Supports the two-stage collaborative workflow:
- * 1. Initial creation with participant sender/recipient details and temporary placeholder cargo.
+ * 1. Initial creation with participant senderRef/recipientRef details and temporary placeholder cargo.
  * 2. Subsequent updates of cargo weight, dimensions, and declared cost by warehouse coworkers.
  */
 public record WaybillLifecycleService(NovaPostController controller){
@@ -33,7 +33,7 @@ public record WaybillLifecycleService(NovaPostController controller){
 
 
 	/**
-	 * Creates a waybill draft with participant sender/recipient routing and placeholder cargo values.
+	 * Creates a waybill draft with participant senderRef/recipientRef routing and placeholder cargo values.
 	 * Allows a sales or support agent to register the shipment before physical weight and seats are packed.
 	 */
 	public InternetDocumentResponse createDraft(ParticipantRouting routing){
@@ -54,12 +54,12 @@ public record WaybillLifecycleService(NovaPostController controller){
 				.serviceType(routing.serviceType() != null ? routing.serviceType() : "WarehouseWarehouse")
 				// Routing
 				.citySender(routing.citySender())
-				.sender(routing.sender())
-				.senderAddress(routing.senderAddress())
-				.contactSender(routing.contactSender())
+				.sender(routing.senderRef())
+				.senderAddress(routing.senderAddressRef())
+				.contactSender(routing.contactSenderRef())
 				.sendersPhone(routing.sendersPhone())
 				.cityRecipient(routing.cityRecipient())
-				.recipient(routing.recipient())
+				.recipient(routing.recipientRef())
 				.recipientAddress(routing.recipientAddress())
 				.contactRecipient(routing.contactRecipient())
 				.recipientsPhone(routing.recipientsPhone())
@@ -79,7 +79,7 @@ public record WaybillLifecycleService(NovaPostController controller){
 
 	/**
 	 * Updates the physical cargo specs of an existing waybill by TTN.
-	 * Automatically fetches the existing document JSON, preserves all sender/recipient routing,
+	 * Automatically fetches the existing document JSON, preserves all senderRef/recipientRef routing,
 	 * applies the new cargo details, and commits the update to Nova Post.
 	 */
 	public InternetDocumentResponse updateCargo(String ttn, LocalDateTime searchFrom, LocalDateTime searchTo, CargoDetails newCargo){

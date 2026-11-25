@@ -140,7 +140,7 @@ public class TtnFetchAndUpdateTest{
 		}
 		else{
 			System.out.println("TTN " + TARGET_TTN + " was not found in account waybills for range " + from + " to " + to + ".");
-			System.out.println("Note: If created under another sender/sub-account, specify DOCUMENT_REF manually.");
+			System.out.println("Note: If created under another senderRef/sub-account, specify DOCUMENT_REF manually.");
 		}
 	}
 
