@@ -1,22 +1,10 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.courier.CourierCallFilter;
-import com.novapost.model.courier.CourierCall;
-import com.novapost.model.courier.CourierCallDocumentsRequest;
-import com.novapost.model.courier.CourierCallDocumentsResult;
-import com.novapost.model.courier.AvailableCourierCallsRequest;
-import com.novapost.model.courier.AvailableCourierCall;
 import com.novapost.model.common.RefRequest;
-import com.novapost.model.courier.CourierCallCancelResult;
-import com.novapost.model.courier.CourierCallUpdateRequest;
-import com.novapost.model.courier.CourierCallBarcode;
-import com.novapost.model.courier.CourierCallRemoveDocumentsRequest;
-import com.novapost.model.courier.CourierCallRemoveResult;
-import com.novapost.model.courier.CourierCallCreateRequest;
+import com.novapost.model.courier.*;
 
 /**
  * Facade for the "CarCall" section of the Nova Post API documentation

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.novapost.model.support.NpDecimalDeserializer;
-import java.math.BigDecimal;
 import com.novapost.model.support.NpIntegerDeserializer;
+
+import java.math.BigDecimal;
 
 /** Answer of {@code InternetDocumentGeneral/getDocumentPrice}; the API returns the amounts as strings. */
 @JsonIgnoreProperties(ignoreUnknown = true)

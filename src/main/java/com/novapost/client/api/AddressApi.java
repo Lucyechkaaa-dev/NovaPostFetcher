@@ -1,32 +1,12 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.SearchSettlementFilter;
-import com.novapost.model.SearchSettlementItem;
-import com.novapost.model.SettlementStreetFilter;
-import com.novapost.model.SettlementStreetSearchResult;
-import com.novapost.model.address.CounterpartyAddressSaveRequest;
-import com.novapost.model.address.CounterpartyAddressResult;
+import com.novapost.model.*;
+import com.novapost.model.address.*;
 import com.novapost.model.common.RefRequest;
 import com.novapost.model.common.RefResult;
-import com.novapost.model.address.CounterpartyAddressUpdateRequest;
-import com.novapost.model.SettlementFilter;
-import com.novapost.model.Settlement;
-import com.novapost.model.address.CityFilter;
-import com.novapost.model.address.City;
-import com.novapost.model.address.Area;
-import com.novapost.model.WarehouseFilter;
-import com.novapost.model.Warehouse;
-import com.novapost.model.WarehouseTypes;
-import com.novapost.model.StreetFilter;
-import com.novapost.model.Street;
-import com.novapost.model.address.SettlementCountryRegionRequest;
-import com.novapost.model.address.SettlementRegion;
-import com.novapost.model.address.SettlementAreaRequest;
-import com.novapost.model.address.SettlementArea;
 
 /**
  * Facade for the "Address" section of the Nova Post API documentation

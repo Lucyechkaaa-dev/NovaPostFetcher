@@ -1,22 +1,12 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.DocumentPriceRequest;
-import com.novapost.model.DocumentPriceResponse;
-import com.novapost.model.DocumentDeliveryDateRequest;
-import com.novapost.model.DocumentDeliveryDateResponse;
-import com.novapost.model.InternetDocumentSaveRequest;
-import com.novapost.model.InternetDocumentResponse;
-import com.novapost.model.InternetDocumentListFilter;
-import com.novapost.model.InternetDocumentListItem;
-import com.novapost.model.InternetDocumentDeleteRequest;
-import com.novapost.model.InternetDocumentDeleteResponse;
-import com.novapost.model.document.GenerateReportRequest;
-import com.novapost.model.document.GenerateReportItem;
+import com.novapost.model.*;
 import com.novapost.model.document.EwTemplateListRequest;
+import com.novapost.model.document.GenerateReportItem;
+import com.novapost.model.document.GenerateReportRequest;
 import com.novapost.model.document.InternetDocument;
 
 /**

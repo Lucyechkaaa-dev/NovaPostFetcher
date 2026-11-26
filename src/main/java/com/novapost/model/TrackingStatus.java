@@ -7,13 +7,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.novapost.model.support.NpBooleanDeserializer;
-
-import java.time.LocalDateTime;
-import java.util.Map;
 import com.novapost.model.support.NpDateTimeDeserializer;
 import com.novapost.model.support.NpDecimalDeserializer;
-import java.math.BigDecimal;
 import com.novapost.model.support.NpIntegerDeserializer;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Map;
 
 /**
  * Response model for {@code TrackingDocumentGeneral/getStatusDocuments}.

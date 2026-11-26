@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.novapost.model.support.NpDateDeserializer;
-
-import java.time.LocalDate;
 import com.novapost.model.support.NpDecimalDeserializer;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /** Answer of {@code InternetDocumentGeneral/save} and {@code update}. */
 @JsonIgnoreProperties(ignoreUnknown = true)

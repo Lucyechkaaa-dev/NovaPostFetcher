@@ -1,18 +1,12 @@
 package com.novapost.model.scansheet;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.novapost.model.support.NpBooleanDeserializer;
 import com.novapost.model.support.NpDateTimeDeserializer;
-import java.time.LocalDateTime;
 
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
 
 /**
  * Response model for {@code ScanSheetGeneral/getScanSheetList}.

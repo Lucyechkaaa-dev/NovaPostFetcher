@@ -1,17 +1,17 @@
 package com.novapost.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.novapost.model.document.CargoDetailItem;
-import com.novapost.model.document.RedeliveryCalculate;
-
-import java.util.List;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.novapost.model.document.CargoDetailItem;
+import com.novapost.model.document.RedeliveryCalculate;
 import com.novapost.model.support.NpDecimalDeserializer;
 import com.novapost.model.support.NpDecimalSerializer;
+
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Request of {@code InternetDocumentGeneral/getDocumentPrice}. For the documented cargo types ({@code Cargo},

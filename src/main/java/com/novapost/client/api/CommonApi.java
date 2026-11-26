@@ -1,24 +1,9 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.common.TimeIntervalRequest;
-import com.novapost.model.common.TimeInterval;
-import com.novapost.model.common.RefDescription;
-import com.novapost.model.common.Pallet;
-import com.novapost.model.common.PackListRequest;
-import com.novapost.model.common.PackItem;
-import com.novapost.model.common.TireWheel;
-import com.novapost.model.common.CargoDescriptionRequest;
-import com.novapost.model.common.CargoDescription;
-import com.novapost.model.common.MessageCodeText;
-import com.novapost.model.common.OwnershipForm;
-import com.novapost.model.common.PackListSpecialRequest;
-import com.novapost.model.common.PackListSpecialResult;
-import com.novapost.model.common.PickupTimeIntervalRequest;
-import com.novapost.model.common.PickupTimeInterval;
+import com.novapost.model.common.*;
 
 /**
  * Facade for the "Common" section of the Nova Post API documentation

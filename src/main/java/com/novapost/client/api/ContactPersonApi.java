@@ -1,14 +1,13 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.contact.ContactPersonSaveRequest;
-import com.novapost.model.contact.ContactPerson;
-import com.novapost.model.contact.ContactPersonUpdateRequest;
 import com.novapost.model.common.RefRequest;
 import com.novapost.model.common.RefResult;
+import com.novapost.model.contact.ContactPerson;
+import com.novapost.model.contact.ContactPersonSaveRequest;
+import com.novapost.model.contact.ContactPersonUpdateRequest;
 
 /**
  * Facade for the "ContactPerson" section of the Nova Post API documentation

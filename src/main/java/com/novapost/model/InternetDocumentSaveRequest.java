@@ -3,18 +3,18 @@ package com.novapost.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.novapost.model.support.NpBooleanDeserializer;
 import com.novapost.model.support.NpDecimalDeserializer;
 import com.novapost.model.support.NpDecimalSerializer;
 import com.novapost.model.support.NpFlagSerializer;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Request of {@code InternetDocumentGeneral/save} and {@code update}: every parameter of the eight documented variants

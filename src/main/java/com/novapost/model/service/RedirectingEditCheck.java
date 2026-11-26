@@ -1,17 +1,11 @@
 package com.novapost.model.service;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.novapost.model.support.NpDecimalDeserializer;
-import java.math.BigDecimal;
 
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
 
 /**
  * Response model for {@code AdditionalServiceGeneral/checkPossibilityForRedirecting}.

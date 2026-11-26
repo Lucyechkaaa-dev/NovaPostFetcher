@@ -1,20 +1,12 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.counterparty.CounterpartySaveRequest;
-import com.novapost.model.counterparty.Counterparty;
-import com.novapost.model.counterparty.CounterpartyUpdateRequest;
 import com.novapost.model.common.RefRequest;
 import com.novapost.model.common.RefResult;
-import com.novapost.model.counterparty.CounterpartyAddressesRequest;
-import com.novapost.model.counterparty.CounterpartyAddress;
-import com.novapost.model.counterparty.CounterpartyOptions;
-import com.novapost.model.counterparty.CounterpartyContactPersonsRequest;
 import com.novapost.model.contact.ContactPerson;
-import com.novapost.model.counterparty.CounterpartyListRequest;
+import com.novapost.model.counterparty.*;
 
 /**
  * Facade for the "Counterparty" section of the Nova Post API documentation

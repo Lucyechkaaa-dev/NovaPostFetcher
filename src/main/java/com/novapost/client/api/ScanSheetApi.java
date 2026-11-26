@@ -1,18 +1,9 @@
 package com.novapost.client.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.novapost.client.NovaPostClient;
 import com.novapost.client.NpCall;
 import com.novapost.client.NpModel;
-import com.novapost.model.scansheet.ScanSheetInsertRequest;
-import com.novapost.model.scansheet.ScanSheetInsertResult;
-import com.novapost.model.scansheet.ScanSheetRequest;
-import com.novapost.model.scansheet.ScanSheet;
-import com.novapost.model.scansheet.ScanSheetListItem;
-import com.novapost.model.scansheet.ScanSheetDeleteRequest;
-import com.novapost.model.scansheet.ScanSheetDeleteResult;
-import com.novapost.model.scansheet.ScanSheetRemoveDocumentsRequest;
-import com.novapost.model.scansheet.ScanSheetRemoveDocumentsResult;
+import com.novapost.model.scansheet.*;
 
 /**
  * Facade for the "ScanSheet" section of the Nova Post API documentation

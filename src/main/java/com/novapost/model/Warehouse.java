@@ -2,15 +2,15 @@ package com.novapost.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Map;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.novapost.model.support.NpBooleanDeserializer;
 import com.novapost.model.support.NpDateTimeDeserializer;
 import com.novapost.model.support.NpDecimalDeserializer;
+import com.novapost.model.support.NpIntegerDeserializer;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import com.novapost.model.support.NpIntegerDeserializer;
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Warehouse(
