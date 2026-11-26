@@ -1,5 +1,9 @@
 package com.novapost.model;
 
+import java.time.LocalDateTime;
+
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.novapost.client.NovaPostClient;
 import org.junit.jupiter.api.Test;
@@ -30,10 +34,14 @@ class TrackingStatusTest {
 		assertEquals("20400560705237", t.number());
 		assertEquals("9", t.statusCode());
 		assertEquals("Відправлення отримано", t.status());
-		assertEquals(11.0, t.documentWeight());
-		assertEquals("247.28", t.documentCost());
-		assertEquals(11017.0, t.announcedPrice());
-		assertEquals("2026-11-11 11:26:05", t.actualDeliveryDate());
+		assertEquals(new BigDecimal("11"), t.documentWeight());
+		assertEquals(0, new BigDecimal("247.28").compareTo(t.documentCost()));
+		assertEquals(0, new BigDecimal("11017").compareTo(t.announcedPrice()));
+		// one answer, four spellings of a date: dd-MM-yyyy HH:mm:ss, dd.MM.yyyy HH:mm:ss, yyyy-MM-dd HH:mm:ss
+		assertEquals(LocalDateTime.of(2026, 11, 10, 17, 12, 46), t.dateCreated());
+		assertEquals(LocalDateTime.of(2026, 11, 11, 17, 10, 43), t.recipientDateTime());
+		assertEquals(LocalDateTime.of(2026, 11, 11, 12, 0, 0), t.scheduledDeliveryDate());
+		assertEquals(LocalDateTime.of(2026, 11, 11, 11, 26, 5), t.actualDeliveryDate());
 		assertTrue(t.possibilityCreateClaim());
 	}
 }

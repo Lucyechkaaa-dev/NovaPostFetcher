@@ -3,6 +3,11 @@ package com.novapost.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * Request of {@code AddressGeneral/getStreet}. The documentation marks {@code FindByString} as required, yet the "list all streets
+ * of a city" mode ({@link #byCity}) omits it, and {@code NovaPostSyncService} relies on that mode; if the live API ever starts
+ * enforcing the documented rule, use {@link #byCityAndName} with a search string instead.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record StreetFilter(
 		@JsonProperty("CityRef") String cityRef,

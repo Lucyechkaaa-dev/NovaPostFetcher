@@ -21,6 +21,8 @@ public record WaybillFetcherService(NovaPostClient client, ModelProjector projec
 
 	private static final System.Logger LOGGER = System.getLogger(WaybillFetcherService.class.getName());
 	public static final int PAGE_LIMIT = 100;
+	/** Safety net: no single day has this many pages of 100 waybills. */
+	public static final int MAX_PAGES_PER_DAY = 1000;
 	public static final long DEFAULT_THROTTLE_DELAY_MS = 300;
 	public static final int DEFAULT_MAX_RETRIES = 5;
 	public static final long DEFAULT_INITIAL_BACKOFF_MS = 1000;
@@ -88,9 +90,11 @@ public record WaybillFetcherService(NovaPostClient client, ModelProjector projec
 		Objects.requireNonNull(rawBatchConsumer, "rawBatchConsumer must not be null");
 
 		// The API works per calendar day, so iterate over dates and ignore the time part.
+		// Pages are requested with GetFullList=0 (paged mode); GetFullList=1 would cap each day at 100 records.
 		LocalDate lastDay = to.toLocalDate();
 		for(LocalDate currentDay = from.toLocalDate(); !currentDay.isAfter(lastDay); currentDay = currentDay.plusDays(1)){
 			int page = 1;
+			String previousFirstRef = null;
 			while(true){
 				JsonNode dataArray = fetchPageWithRetry(currentDay, page);
 
@@ -98,9 +102,17 @@ public record WaybillFetcherService(NovaPostClient client, ModelProjector projec
 					break;
 				}
 
+				// A server that ignores Page would hand back the same page forever; stop instead of looping.
+				String firstRef = firstKey(dataArray);
+				if(page > 1 && firstRef != null && firstRef.equals(previousFirstRef)){
+					LOGGER.log(System.Logger.Level.WARNING, "Page {0} of {1} repeats page {2}; the API ignored Page, stopping", page, currentDay, page - 1);
+					break;
+				}
+				previousFirstRef = firstRef;
+
 				rawBatchConsumer.accept(dataArray);
 
-				if(dataArray.size() < PAGE_LIMIT){
+				if(dataArray.size() < PAGE_LIMIT || page >= MAX_PAGES_PER_DAY){
 					break;
 				}
 
@@ -109,6 +121,15 @@ public record WaybillFetcherService(NovaPostClient client, ModelProjector projec
 			}
 			applyThrottling();
 		}
+	}
+
+	private static String firstKey(JsonNode dataArray){
+		JsonNode first = dataArray.get(0);
+		if(first == null){
+			return null;
+		}
+		String ref = first.path("Ref").asText(null);
+		return ref != null ? ref : first.path("IntDocNumber").asText(null);
 	}
 
 	private JsonNode fetchPageWithRetry(LocalDate day, int page){

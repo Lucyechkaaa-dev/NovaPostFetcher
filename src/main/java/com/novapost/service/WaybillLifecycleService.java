@@ -44,10 +44,21 @@ public record WaybillLifecycleService(NovaPostController controller){
 	 * Creates a full waybill with both routing details and specified cargo parameters in a single step.
 	 */
 	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo){
+		return createWaybill(routing, cargo, null);
+	}
+
+	/**
+	 * Same as {@link #createWaybill(ParticipantRouting, CargoDetails)}, then lets the caller adjust the request before it is sent:
+	 * delivery to or from a postomat ({@code toPostomat}, {@code fromPostomat}), a recipient given as text
+	 * ({@code recipientBranchByText}, {@code recipientAddressByText}), backward delivery of documents, packing and the other
+	 * parameters of the documented {@code save} variants.
+	 */
+	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo,
+	                                              Consumer<InternetDocumentSaveRequest.Builder> customizer){
 		Objects.requireNonNull(routing, "ParticipantRouting must not be null");
 		CargoDetails effectiveCargo = cargo != null ? cargo : CargoDetails.ofPlaceholder();
 
-		InternetDocumentSaveRequest request = InternetDocumentSaveRequest.builder()
+		InternetDocumentSaveRequest.Builder builder = InternetDocumentSaveRequest.builder()
 				.payerType(routing.payerType() != null ? routing.payerType() : "Sender")
 				.paymentMethod(routing.paymentMethod() != null ? routing.paymentMethod() : "NonCash")
 				.dateTime(routing.dateTime() != null ? routing.dateTime() : LocalDate.now())
@@ -71,10 +82,12 @@ public record WaybillLifecycleService(NovaPostController controller){
 				.cost(effectiveCargo.cost())
 				.seatsAmount(effectiveCargo.seatsAmount())
 				.volumeGeneral(effectiveCargo.volumeGeneral())
-				.optionsSeat(effectiveCargo.optionsSeat())
-				.build();
+				.optionsSeat(effectiveCargo.optionsSeat());
 
-		return controller.createWaybill(request);
+		if(customizer != null){
+			customizer.accept(builder);
+		}
+		return controller.createWaybill(builder.build());
 	}
 
 	/**

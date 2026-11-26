@@ -10,6 +10,7 @@ import com.novapost.projection.ModelProjector;
 import com.novapost.service.WaybillFetcherService;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -42,7 +43,8 @@ public class NovaPostController{
 				config.apiKey(),
 				config.apiUrl(),
 				java.net.http.HttpClient.newBuilder().connectTimeout(java.time.Duration.ofSeconds(15)).build(),
-				NovaPostClient.createDefaultMapper()
+				NovaPostClient.createDefaultMapper(),
+				config.modelStyle()
 		));
 	}
 
@@ -150,21 +152,30 @@ public class NovaPostController{
 		return projector.projectJsonArrayToClass(dataNode, targetType);
 	}
 
+	/** Streets of a settlement; the API wraps them as {@code data[0].Addresses}, which is unwrapped here. */
 	public List<SettlementStreet> searchStreets(String settlementRef, String streetName){
 		SettlementStreetFilter filter = SettlementStreetFilter.of(settlementRef, streetName);
-		return unwrapData(() -> client.searchSettlementStreets(filter), "searchSettlementStreets");
+		List<SettlementStreetSearchResult> data = unwrapData(() -> client.searchSettlementStreets(filter), "searchSettlementStreets");
+		return data.isEmpty() ? List.of() : data.getFirst().streets();
 	}
 
 	public List<Map<String, Object>> searchStreets(String settlementRef, String streetName, Map<String, Object> targetFields){
 		SettlementStreetFilter filter = SettlementStreetFilter.of(settlementRef, streetName);
 		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS, "searchSettlementStreets", filter), "searchSettlementStreets");
-		return projector.projectJsonArrayToMap(dataNode, targetFields);
+		return projector.projectJsonArrayToMap(streetAddresses(dataNode), targetFields);
 	}
 
 	public <T> List<T> searchStreets(String settlementRef, String streetName, Class<T> targetType){
 		SettlementStreetFilter filter = SettlementStreetFilter.of(settlementRef, streetName);
 		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_ADDRESS, "searchSettlementStreets", filter), "searchSettlementStreets");
-		return projector.projectJsonArrayToClass(dataNode, targetType);
+		return projector.projectJsonArrayToClass(streetAddresses(dataNode), targetType);
+	}
+
+	private static JsonNode streetAddresses(JsonNode dataNode){
+		if(dataNode.isArray() && !dataNode.isEmpty() && dataNode.get(0).path("Addresses").isArray()){
+			return dataNode.get(0).path("Addresses");
+		}
+		return MissingNode.getInstance();
 	}
 
 	public List<Street> getStreets(String cityRef){
@@ -213,6 +224,11 @@ public class NovaPostController{
 
 	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo){
 		return new com.novapost.service.WaybillLifecycleService(this).createWaybill(routing, cargo);
+	}
+
+	/** Creates a waybill and lets the caller apply a recipe (postomat, recipient as text, backward delivery...) to the request first. */
+	public InternetDocumentResponse createWaybill(ParticipantRouting routing, CargoDetails cargo, Consumer<InternetDocumentSaveRequest.Builder> customizer){
+		return new com.novapost.service.WaybillLifecycleService(this).createWaybill(routing, cargo, customizer);
 	}
 
 	public InternetDocumentResponse updateWaybill(InternetDocumentSaveRequest request){
@@ -296,15 +312,15 @@ public class NovaPostController{
 		new WaybillFetcherService(client, projector, 300, 5, 1000).fetchAllDocuments(from, to, targetFields, batchConsumer);
 	}
 
-	public double calculatePrice(String citySender, String cityRecipient, double weightKg, double declaredCost){
+	public BigDecimal calculatePrice(String citySender, String cityRecipient, double weightKg, double declaredCost){
 		return calculatePrice(citySender, cityRecipient, weightKg, declaredCost, "WarehouseWarehouse", "Parcel");
 	}
 
-	public double calculatePrice(String citySender, String cityRecipient, double weightKg, double declaredCost,
+	public BigDecimal calculatePrice(String citySender, String cityRecipient, double weightKg, double declaredCost,
 	                             String serviceType, String cargoType){
 		DocumentPriceRequest req = new DocumentPriceRequest(
-				citySender, cityRecipient, String.valueOf(weightKg),
-				serviceType, String.valueOf(declaredCost), cargoType, "1"
+				citySender, cityRecipient, BigDecimal.valueOf(weightKg),
+				serviceType, BigDecimal.valueOf(declaredCost), cargoType, 1
 		);
 		List<DocumentPriceResponse> list = unwrapData(() -> client.getInternetDocumentPrice(req), "getInternetDocumentPrice");
 		if(list.isEmpty() || list.getFirst().cost() == null){
@@ -317,6 +333,22 @@ public class NovaPostController{
 		return estimateDeliveryDate(citySender, cityRecipient, "WarehouseWarehouse", LocalDateTime.now());
 	}
 
+	/**
+	 * Delivery date estimate sending date and time ({@code yyyy-MM-dd HH:mm:ss}) as in the documentation's example, instead of the
+	 * calendar date only. {@code LiveContractSmokeTest} reports which of the two forms the live API accepts.
+	 */
+	public Optional<LocalDateTime> estimateDeliveryDateAt(String citySender, String cityRecipient,
+	                                                      String serviceType, LocalDateTime departure){
+		DocumentDeliveryDateRequest req = DocumentDeliveryDateRequest.ofDateTime(departure, serviceType, citySender, cityRecipient);
+		List<DocumentDeliveryDateResponse> list = unwrapData(() -> client.getInternetDocumentDeliveryDate(req), "getInternetDocumentDeliveryDate");
+		return list.isEmpty() ? Optional.empty() : Optional.ofNullable(list.getFirst().getDeliveryDateTime());
+	}
+
+	/**
+	 * Delivery date estimate for a calendar date. The documentation says the waybill's services (backward delivery, daily delivery and
+	 * others) must be part of the request, yet it names no parameter for them; only the service type and the two cities are modelled.
+	 * Other parameters can be sent through {@code client.call(NpModel.INTERNET_DOCUMENT, "getDocumentDeliveryDate", map, JsonNode.class)}.
+	 */
 	public Optional<LocalDateTime> estimateDeliveryDate(String citySender, String cityRecipient,
 	                                                    String serviceType, LocalDateTime departureDate){
 		// The delivery-date API takes a calendar date only.
@@ -338,17 +370,25 @@ public class NovaPostController{
 		return getTracking(ttn, "");
 	}
 
+	// The client's getTrackingNode(...) already returns the "data" array, so the controller has to go through the full
+	// envelope (getTrackingRoot) to check for errors and then read "data" once; reading it from the array again yielded nothing.
+	/**
+	 * Tracking of one TTN. Authorized access (the client's API key) returns the complete data, including the correct sender and
+	 * recipient; unauthorized access would return limited data where the sender and recipient are replaced with the data that belongs
+	 * to the phone number in the request. The recipient's or sender's {@code phone} returns extended information.
+	 */
 	public List<TrackingStatus> getTracking(String ttn, String phone){
-		return toTrackingStatuses(executeCallForData(() -> client.getTrackingNode(ttn, phone), "getTracking"));
+		return toTrackingStatuses(executeCallForData(() -> client.getTrackingRoot(ttn, phone), "getTracking"));
 	}
 
+	/** Tracking for any number of TTNs; the client splits them into requests of at most 100. */
 	public List<TrackingStatus> getTracking(List<String> ttns){
-		return toTrackingStatuses(executeCallForData(() -> client.getTrackingNode(ttns), "getTracking"));
+		return toTrackingStatuses(executeCallForData(() -> client.getTrackingRoot(ttns), "getTracking"));
 	}
 
 	/** Raw tracking JSON, for fields that TrackingStatus does not declare. */
 	public JsonNode getTrackingNode(String ttn){
-		return executeCallForData(() -> client.getTrackingNode(ttn), "getTracking");
+		return executeCallForData(() -> client.getTrackingRoot(ttn, ""), "getTracking");
 	}
 
 	private List<TrackingStatus> toTrackingStatuses(JsonNode dataNode){
@@ -414,8 +454,11 @@ public class NovaPostController{
 			throw new IllegalArgumentException("from (" + from + ") must not be after to (" + to + ")");
 		}
 		String wanted = ttn.trim();
-		for(int page = 1; ; page++){
-      InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, page, TTN_LOOKUP_PAGE_SIZE);
+		String previousFirst = null;
+		for(int page = 1; page <= MAX_LOOKUP_PAGES; page++){
+			// Paged mode (GetFullList=0) plus the documented IntDocNumber filter: normally the match is on page 1; if the
+			// server ignores the filter the scan simply continues page by page.
+			InternetDocumentListFilter filter = InternetDocumentListFilter.byNumber(wanted, from, to, page, TTN_LOOKUP_PAGE_SIZE);
 			JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
 			if(!dataNode.isArray() || dataNode.isEmpty()){
 				return Optional.empty();
@@ -428,20 +471,21 @@ public class NovaPostController{
 			if(dataNode.size() < TTN_LOOKUP_PAGE_SIZE){
 				return Optional.empty();
 			}
-		}
-	}
-
-	public Optional<JsonNode> findWaybillNodeByNumber(String ttn, LocalDateTime from, LocalDateTime to){
-		InternetDocumentListFilter filter = InternetDocumentListFilter.byDateRange(from, to, 1, 100);
-		JsonNode dataNode = executeCallForData(() -> client.executeForRootNode(NovaPostClient.MODEL_INTERNET_DOCUMENT, "getDocumentList", filter), "getInternetDocumentList");
-		if(dataNode.isArray()){
-			for(JsonNode item : dataNode){
-				if(ttn.equalsIgnoreCase(item.path("IntDocNumber").asText())){
-					return Optional.of(item);
-				}
+			// The same first element twice in a row means the server is not honouring Page; give up instead of looping.
+			String first = dataNode.get(0).path("IntDocNumber").asText(null);
+			if(first != null && first.equals(previousFirst)){
+				return Optional.empty();
 			}
+			previousFirst = first;
 		}
 		return Optional.empty();
+	}
+
+	private static final int MAX_LOOKUP_PAGES = 1000;
+
+	/** Same lookup as {@link #fetchWaybillNodeByTtn}: it pages through the whole range instead of reading only the first 100 waybills. */
+	public Optional<JsonNode> findWaybillNodeByNumber(String ttn, LocalDateTime from, LocalDateTime to){
+		return findWaybillNodeByTtnPaged(ttn, from, to);
 	}
 
 	public InternetDocumentResponse updateWaybillCargoByNumber(String ttn, LocalDateTime from, LocalDateTime to, Consumer<InternetDocumentSaveRequest.Builder> cargoCustomizer){
@@ -454,12 +498,12 @@ public class NovaPostController{
 				.paymentMethod(doc.path("PaymentMethod").asText("NonCash"))
 				.dateTime(LocalDate.now())
 				.cargoType(doc.path("CargoType").asText("Parcel"))
-				.volumeGeneral(doc.path("VolumeGeneral").asText(null))
-				.weight(doc.path("Weight").asText(null))
+				.volumeGeneral(decimal(doc.path("VolumeGeneral")))
+				.weight(decimal(doc.path("Weight")))
 				.serviceType(doc.path("ServiceType").asText("WarehouseWarehouse"))
-				.seatsAmount(doc.path("SeatsAmount").asText("1"))
+				.seatsAmount(integer(doc.path("SeatsAmount"), 1))
 				.description(doc.path("Description").asText(null))
-				.cost(doc.path("Cost").asText(null))
+				.cost(decimal(doc.path("Cost")))
 				.citySender(doc.path("CitySender").asText(null))
 				.sender(doc.path("Sender").asText(null))
 				.senderAddress(doc.path("SenderAddress").asText(null))
@@ -475,11 +519,11 @@ public class NovaPostController{
 			List<InternetDocumentSaveRequest.OptionSeat> seats = new ArrayList<>();
 			for(JsonNode seatNode : doc.path("OptionsSeat")){
 				seats.add(new InternetDocumentSaveRequest.OptionSeat(
-						seatNode.path("volumetricVolume").asText(null),
-						seatNode.path("volumetricWidth").asText(null),
-						seatNode.path("volumetricLength").asText(null),
-						seatNode.path("volumetricHeight").asText(null),
-						seatNode.path("weight").asText(null)
+						decimal(seatNode.path("volumetricVolume")),
+						decimal(seatNode.path("volumetricWidth")),
+						decimal(seatNode.path("volumetricLength")),
+						decimal(seatNode.path("volumetricHeight")),
+						decimal(seatNode.path("weight"))
 				));
 			}
 			if(!seats.isEmpty()){
@@ -492,6 +536,18 @@ public class NovaPostController{
 		}
 
 		return updateWaybill(builder.build());
+	}
+
+	/** The decimal in a raw answer node; {@code null} for a missing, empty or unreadable value. */
+	private static BigDecimal decimal(JsonNode node){
+		String text = node.asText(null);
+		return text == null || text.isBlank() ? null : com.novapost.model.support.NpDecimalDeserializer.parse(text);
+	}
+
+	/** The whole number in a raw answer node, or {@code fallback} when it is missing, empty or unreadable. */
+	private static Integer integer(JsonNode node, Integer fallback){
+		BigDecimal value = decimal(node);
+		return value == null ? fallback : Integer.valueOf(value.intValue());
 	}
 
 	public byte[] printMarking(String ttn, PrintFormat format){
@@ -651,6 +707,55 @@ public class NovaPostController{
 		return projector;
 	}
 
+	private static final System.Logger LOGGER = System.getLogger(NovaPostController.class.getName());
+
+	/** A successful answer can still carry warnings, for example when {@code DateTime} was cut back to "today + 3 months". */
+	private static void logWarnings(String operationName, List<String> warnings){
+		if(warnings != null && !warnings.isEmpty()){
+			LOGGER.log(System.Logger.Level.WARNING, "Nova Post warning in {0}: {1}", operationName, String.join("; ", warnings));
+		}
+	}
+
+	public com.novapost.client.api.AddressApi address(){
+		return client.address();
+	}
+
+	public com.novapost.client.api.CommonApi common(){
+		return client.common();
+	}
+
+	public com.novapost.client.api.CounterpartyApi counterparty(){
+		return client.counterparty();
+	}
+
+	public com.novapost.client.api.ContactPersonApi contactPerson(){
+		return client.contactPerson();
+	}
+
+	public com.novapost.client.api.InternetDocumentApi internetDocument(){
+		return client.internetDocument();
+	}
+
+	public com.novapost.client.api.ScanSheetApi scanSheet(){
+		return client.scanSheet();
+	}
+
+	public com.novapost.client.api.AdditionalServiceApi additionalService(){
+		return client.additionalService();
+	}
+
+	public com.novapost.client.api.CarCallApi courier(){
+		return client.courier();
+	}
+
+	public com.novapost.client.api.TrackingApi tracking(){
+		return client.tracking();
+	}
+
+	public com.novapost.client.api.PrintApi print(){
+		return client.print();
+	}
+
 	private <T> List<T> unwrapData(ApiSupplier<NpResponse<T>> call, String operationName){
 		NpResponse<T> response = executeCall(call, operationName);
 		return response.data() != null ? response.data() : List.of();
@@ -660,8 +765,9 @@ public class NovaPostController{
 		try{
 			NpResponse<T> response = call.get();
 			if(response.hasErrors()){
-				throw new NovaPostApiException("Nova Post API error in " + operationName, response.errors());
+				throw new NovaPostApiException("Nova Post API error in " + operationName, response.errors(), response.errorCodes());
 			}
+			logWarnings(operationName, response.warnings());
 			return response;
 		}
 		catch(IOException | InterruptedException e){
@@ -684,12 +790,21 @@ public class NovaPostController{
 				List<String> errors = new ArrayList<>();
 				if(errorsNode.isArray()){
 					for(JsonNode err : errorsNode){
-						errors.add(err.asText());
+						errors.add(com.novapost.model.support.NpMessageListDeserializer.text(err));
 					}
 				}
 				if(!errors.isEmpty()){
-					throw new NovaPostApiException("Nova Post API error in " + operationName, errors);
+					List<String> codes = new ArrayList<>();
+					if(root.path("errorCodes").isArray()){
+						root.path("errorCodes").forEach(c -> codes.add(com.novapost.model.support.NpMessageListDeserializer.text(c)));
+					}
+					throw new NovaPostApiException("Nova Post API error in " + operationName, errors, codes);
 				}
+			}
+			if(root.path("warnings").isArray() && !root.path("warnings").isEmpty()){
+				List<String> warnings = new ArrayList<>();
+				root.path("warnings").forEach(w -> warnings.add(com.novapost.model.support.NpMessageListDeserializer.text(w)));
+				logWarnings(operationName, warnings);
 			}
 			return root;
 		}

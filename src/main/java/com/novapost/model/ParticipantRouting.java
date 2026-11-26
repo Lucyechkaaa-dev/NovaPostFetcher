@@ -2,6 +2,7 @@ package com.novapost.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
@@ -24,7 +25,7 @@ public record ParticipantRouting(
 		String paymentMethod,
 		String serviceType,
 		LocalDate dateTime,
-		String afterpaymentOnGoodsCost
+		BigDecimal afterpaymentOnGoodsCost
 ){
 
 	public static Builder builder(){
@@ -46,7 +47,7 @@ public record ParticipantRouting(
 		private String paymentMethod = "NonCash";
 		private String serviceType = "WarehouseWarehouse";
 		private LocalDate date = LocalDate.now();
-		private String afterpaymentOnGoodsCost;
+		private BigDecimal afterpaymentOnGoodsCost;
 
 		public Builder citySenderRef(String citySenderRef){ this.citySenderRef = citySenderRef; return this; }
 		public Builder senderRef(String senderRef){ this.senderRef = senderRef; return this; }
@@ -62,7 +63,8 @@ public record ParticipantRouting(
 		public Builder paymentMethod(String paymentMethod){ this.paymentMethod = paymentMethod; return this; }
 		public Builder serviceType(String serviceType){ this.serviceType = serviceType; return this; }
 		public Builder dateTime(LocalDate dateTime){ this.date = dateTime; return this; }
-		public Builder afterpaymentOnGoodsCost(String cost){ this.afterpaymentOnGoodsCost = cost; return this; }
+		public Builder afterpaymentOnGoodsCost(BigDecimal cost){ this.afterpaymentOnGoodsCost = cost; return this; }
+		public Builder afterpaymentOnGoodsCost(double cost){ this.afterpaymentOnGoodsCost = BigDecimal.valueOf(cost); return this; }
 
 		public ParticipantRouting build(){
 			return new ParticipantRouting(

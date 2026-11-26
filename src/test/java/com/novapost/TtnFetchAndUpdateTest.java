@@ -1,5 +1,7 @@
 package com.novapost;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novapost.client.NovaPostClient;
@@ -162,8 +164,8 @@ public class TtnFetchAndUpdateTest{
 		assertNotNull(updateRequest);
 		assertEquals(sampleRef, updateRequest.ref());
 		assertEquals("Parcel", updateRequest.cargoType());
-		assertEquals("5.0", updateRequest.weight());
-		assertEquals("1", updateRequest.seatsAmount());
+		assertEquals(new BigDecimal("5.0"), updateRequest.weight());
+		assertEquals(1, updateRequest.seatsAmount());
 		assertNotNull(updateRequest.optionsSeat());
 		assertEquals(1, updateRequest.optionsSeat().size());
 
@@ -201,19 +203,19 @@ public class TtnFetchAndUpdateTest{
 		System.out.println("Executing merged live update for TTN: " + TARGET_TTN);
 		InternetDocumentResponse response = controller.updateWaybillCargoByNumber(TARGET_TTN, from, to, builder -> {
 			InternetDocumentSaveRequest.OptionSeat cargoSeat = InternetDocumentSaveRequest.OptionSeat.ofDimensions(
-					"30",  // width (cm)
-					"40",  // length (cm)
-					"20",  // height (cm)
-					"5.0"  // actual weight (kg)
+					new BigDecimal("30"),  // width (cm)
+					new BigDecimal("40"),  // length (cm)
+					new BigDecimal("20"),  // height (cm)
+					new BigDecimal("5.0")  // actual weight (kg)
 			);
 
 			builder
 					.cargoType("Parcel")
 					.description("Автозапчастини та аксесуари")
-					.weight("5.0")
-					.volumeGeneral("0.024")
-					.seatsAmount("1")
-					.cost("1500")
+					.weight(new BigDecimal("5.0"))
+					.volumeGeneral(new BigDecimal("0.024"))
+					.seatsAmount(1)
+					.cost(new BigDecimal("1500"))
 					.optionsSeat(List.of(cargoSeat));
 		});
 
@@ -231,20 +233,20 @@ public class TtnFetchAndUpdateTest{
 	 */
 	public static InternetDocumentSaveRequest buildCargoUpdateRequest(String documentRef){
 		InternetDocumentSaveRequest.OptionSeat cargoSeat = InternetDocumentSaveRequest.OptionSeat.ofDimensions(
-				"30",  // width (cm)
-				"40",  // length (cm)
-				"20",  // height (cm)
-				"5.0"  // actual weight (kg)
+				new BigDecimal("30"),  // width (cm)
+				new BigDecimal("40"),  // length (cm)
+				new BigDecimal("20"),  // height (cm)
+				new BigDecimal("5.0")  // actual weight (kg)
 		);
 
 		return InternetDocumentSaveRequest.builder()
 				.ref(documentRef)
 				.cargoType("Parcel")
 				.description("Автозапчастини та аксесуари")
-				.weight("5.0")
-				.volumeGeneral("0.024")
-				.seatsAmount("1")
-				.cost("1500")
+				.weight(new BigDecimal("5.0"))
+				.volumeGeneral(new BigDecimal("0.024"))
+				.seatsAmount(1)
+				.cost(new BigDecimal("1500"))
 				.optionsSeat(List.of(cargoSeat))
 				.payerType("Sender")
 				.paymentMethod("NonCash")

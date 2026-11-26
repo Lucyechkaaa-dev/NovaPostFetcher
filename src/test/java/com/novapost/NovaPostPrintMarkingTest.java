@@ -41,8 +41,34 @@ class NovaPostPrintMarkingTest {
 
 		byte[] resultA4 = client.printMarkingA4("20400048799000");
 		assertArrayEquals(fakePdf, resultA4);
-		assertTrue(mockClient.lastRequestUri.toString().contains("printMarkings"));
+		assertTrue(mockClient.lastRequestUri.toString().contains("printMarking85x85"));
+		assertTrue(mockClient.lastRequestUri.toString().contains("/type/pdf8/"));
 		assertFalse(mockClient.lastRequestUri.toString().endsWith("/zebra"));
+	}
+
+	@Test
+	void testNonPdfAnswerIsRejected() {
+		// a 200 answer that is an HTML error page must not be handed out as a "PDF"
+		byte[] html = "<html><body>Wrong API key</body></html>".getBytes(StandardCharsets.UTF_8);
+		MockHttpClient mockClient = new MockHttpClient(200, html);
+		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, mockClient, NovaPostClient.createDefaultMapper());
+
+		java.io.IOException e = assertThrows(java.io.IOException.class, () -> client.printMarkingZebra("20400048799000"));
+		assertTrue(e.getMessage().contains("not a PDF"), e.getMessage());
+		assertTrue(e.getMessage().contains("Wrong API key"), e.getMessage());
+	}
+
+	@Test
+	void testHtmlRequestIsNotCheckedForPdfHeader() throws Exception {
+		byte[] html = "<html><body>label</body></html>".getBytes(StandardCharsets.UTF_8);
+		MockHttpClient mockClient = new MockHttpClient(200, html);
+		NovaPostClient client = new NovaPostClient("test-key", NovaPostClient.DEFAULT_API_URL, mockClient, NovaPostClient.createDefaultMapper());
+
+		byte[] result = client.print(com.novapost.model.PrintRequest.builder().doc(com.novapost.model.PrintRequest.Doc.DOCUMENT)
+				.type(com.novapost.model.PrintRequest.Type.HTML).id("20400048799000").build());
+
+		assertArrayEquals(html, result);
+		assertTrue(mockClient.lastRequestUri.toString().contains("/type/html/"));
 	}
 
 	@Test

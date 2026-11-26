@@ -87,7 +87,8 @@ public class DatabaseManager{
 					        ref VARCHAR(36) PRIMARY KEY,
 					        int_doc_number VARCHAR(32) NOT NULL,
 					        date_time DATETIME,
-					        cost VARCHAR(32),
+					        cost_on_site VARCHAR(32),
+					        declared_cost VARCHAR(32),
 					        weight VARCHAR(32),
 					        seats_amount VARCHAR(32),
 					        city_sender VARCHAR(36),
@@ -118,6 +119,32 @@ public class DatabaseManager{
 					        INDEX idx_street_desc (description)
 					    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 					""");
+
+			migrateInternetDocumentsTable(conn, stmt);
+		}
+	}
+
+	/**
+	 * Tables created by earlier versions have a single {@code cost} column that actually held the delivery price
+	 * ({@code CostOnSite}). Renames it to {@code cost_on_site} and adds {@code declared_cost} for the declared value
+	 * ({@code Cost}); a no-op on a fresh table.
+	 */
+	private void migrateInternetDocumentsTable(Connection conn, Statement stmt) throws SQLException{
+		DatabaseMetaData meta = conn.getMetaData();
+		boolean hasOldCost = hasColumn(meta, "nova_post_internet_documents", "cost");
+		boolean hasCostOnSite = hasColumn(meta, "nova_post_internet_documents", "cost_on_site");
+		boolean hasDeclaredCost = hasColumn(meta, "nova_post_internet_documents", "declared_cost");
+		if(hasOldCost && !hasCostOnSite){
+			stmt.execute("ALTER TABLE nova_post_internet_documents CHANGE COLUMN cost cost_on_site VARCHAR(32)");
+		}
+		if(!hasDeclaredCost){
+			stmt.execute("ALTER TABLE nova_post_internet_documents ADD COLUMN declared_cost VARCHAR(32) AFTER cost_on_site");
+		}
+	}
+
+	private static boolean hasColumn(DatabaseMetaData meta, String table, String column) throws SQLException{
+		try(ResultSet rs = meta.getColumns(null, null, table, column)){
+			return rs.next();
 		}
 	}
 
@@ -236,12 +263,12 @@ public class DatabaseManager{
 				ps.setString(7, s.regionsDescription());
 				ps.setString(8, s.area());
 				ps.setString(9, s.areaDescription());
-				ps.setString(10, s.latitude());
-				ps.setString(11, s.longitude());
+				ps.setString(10, text(s.latitude()));
+				ps.setString(11, text(s.longitude()));
 				ps.setString(12, s.index1());
 				ps.setString(13, s.index2());
 				ps.setString(14, s.indexCOATSU1());
-				ps.setString(15, s.warehouse());
+				ps.setString(15, flagText(s.warehouse()));
 				ps.addBatch();
 			}
 
@@ -306,10 +333,10 @@ public class DatabaseManager{
 				ps.setString(11, w.settlementDescription());
 				ps.setString(12, w.settlementAreaDescription());
 				ps.setString(13, w.settlementRegionsDescription());
-				ps.setString(14, w.longitude());
-				ps.setString(15, w.latitude());
-				ps.setString(16, w.totalMaxWeightAllowed());
-				ps.setString(17, w.placeMaxWeightAllowed());
+				ps.setString(14, text(w.longitude()));
+				ps.setString(15, text(w.latitude()));
+				ps.setString(16, text(w.totalMaxWeightAllowed()));
+				ps.setString(17, text(w.placeMaxWeightAllowed()));
 				ps.setString(18, w.warehouseStatus());
 				ps.setString(19, w.categoryOfWarehouse());
 				ps.setString(20, w.direct());
@@ -331,15 +358,16 @@ public class DatabaseManager{
 
 		String sql = """
 				    INSERT INTO nova_post_internet_documents (
-				        ref, int_doc_number, date_time, cost, weight, seats_amount,
+				        ref, int_doc_number, date_time, cost_on_site, declared_cost, weight, seats_amount,
 				        city_sender, city_recipient, sender_description, recipient_description,
 				        city_sender_description, city_recipient_description, state_name,
 				        payer_type, estimated_delivery_date
-				    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 				    ON DUPLICATE KEY UPDATE
 				        int_doc_number = VALUES(int_doc_number),
 				        date_time = VALUES(date_time),
-				        cost = VALUES(cost),
+				        cost_on_site = VALUES(cost_on_site),
+				        declared_cost = VALUES(declared_cost),
 				        weight = VALUES(weight),
 				        seats_amount = VALUES(seats_amount),
 				        city_sender = VALUES(city_sender),
@@ -361,18 +389,19 @@ public class DatabaseManager{
 				ps.setString(1, doc.ref());
 				ps.setString(2, doc.intDocNumber());
 				ps.setTimestamp(3, doc.dateTime() != null ? Timestamp.valueOf(doc.dateTime()) : null);
-				ps.setString(4, doc.costOnSite());
-				ps.setString(5, doc.weight());
-				ps.setString(6, doc.seatsAmount());
-				ps.setString(7, doc.citySender());
-				ps.setString(8, doc.cityRecipient());
-				ps.setString(9, doc.senderDescription());
-				ps.setString(10, doc.recipientDescription());
-				ps.setString(11, doc.citySenderDescription());
-				ps.setString(12, doc.cityRecipientDescription());
-				ps.setString(13, doc.stateName());
-				ps.setString(14, doc.payerType());
-				ps.setTimestamp(15, doc.estimatedDeliveryDate() != null ? Timestamp.valueOf(doc.estimatedDeliveryDate()) : null);
+				ps.setString(4, text(doc.costOnSite()));
+				ps.setString(5, text(doc.cost()));
+				ps.setString(6, text(doc.weight()));
+				ps.setString(7, text(doc.seatsAmount()));
+				ps.setString(8, doc.citySender());
+				ps.setString(9, doc.cityRecipient());
+				ps.setString(10, doc.senderDescription());
+				ps.setString(11, doc.recipientDescription());
+				ps.setString(12, doc.citySenderDescription());
+				ps.setString(13, doc.cityRecipientDescription());
+				ps.setString(14, doc.stateName());
+				ps.setString(15, doc.payerType());
+				ps.setTimestamp(16, doc.estimatedDeliveryDate() != null ? Timestamp.valueOf(doc.estimatedDeliveryDate()) : null);
 				ps.addBatch();
 			}
 
@@ -578,8 +607,8 @@ public class DatabaseManager{
 		return new Settlement(
 				rs.getString("ref"),
 				rs.getString("settlement_type"),
-				rs.getString("latitude"),
-				rs.getString("longitude"),
+				decimal(rs.getString("latitude")),
+				decimal(rs.getString("longitude")),
 				rs.getString("description"),
 				rs.getString("description_ru"),
 				rs.getString("settlement_type_description"),
@@ -593,7 +622,7 @@ public class DatabaseManager{
 				rs.getString("index1"),
 				rs.getString("index2"),
 				rs.getString("index_coatsu1"),
-				rs.getString("warehouse_flag")
+				flag(rs.getString("warehouse_flag"))
 		);
 	}
 
@@ -616,16 +645,16 @@ public class DatabaseManager{
 				rs.getString("settlement_area_description"),
 				rs.getString("settlement_regions_description"),
 				null,
-				rs.getString("longitude"),
-				rs.getString("latitude"),
+				decimal(rs.getString("longitude")),
+				decimal(rs.getString("latitude")),
 				null,
 				null,
 				null,
 				null,
 				null,
 				null,
-				rs.getString("total_max_weight_allowed"),
-				rs.getString("place_max_weight_allowed"),
+				decimal(rs.getString("total_max_weight_allowed")),
+				decimal(rs.getString("place_max_weight_allowed")),
 				rs.getString("warehouse_status"),
 				null,
 				rs.getString("category_of_warehouse"),
@@ -639,16 +668,17 @@ public class DatabaseManager{
 		);
 	}
 
-	private InternetDocumentListItem mapInternetDocument(ResultSet rs) throws SQLException{
+	/** Package-private so a test can check every column it reads against the DDL. */
+	InternetDocumentListItem mapInternetDocument(ResultSet rs) throws SQLException{
 		Timestamp dt = rs.getTimestamp("date_time");
 		Timestamp edd = rs.getTimestamp("estimated_delivery_date");
 		return new InternetDocumentListItem(
 				rs.getString("ref"),
 				rs.getString("int_doc_number"),
 				dt != null ? dt.toLocalDateTime() : null,
-				rs.getString("costOnSite"),
-				rs.getString("weight"),
-				rs.getString("seats_amount"),
+				decimal(rs.getString("cost_on_site")),
+				decimal(rs.getString("weight")),
+				integer(rs.getString("seats_amount")),
 				rs.getString("city_sender"),
 				rs.getString("city_recipient"),
 				rs.getString("sender_description"),
@@ -657,10 +687,39 @@ public class DatabaseManager{
 				rs.getString("city_sender_description"),
 				rs.getString("state_name"),
 				rs.getString("payer_type"),
-				edd != null ? edd.toLocalDateTime() : null
+				edd != null ? edd.toLocalDateTime() : null,
+				null, null, null,
+				decimal(rs.getString("declared_cost")),
+				null, null, null, null, null, null, null, null
 		);
 	}
 
+	/** The text written to a VARCHAR column for a decimal: the plain notation, the scale the API sent kept. */
+	private static String text(java.math.BigDecimal value){
+		return value == null ? null : value.toPlainString();
+	}
+
+	private static String text(Integer value){
+		return value == null ? null : value.toString();
+	}
+
+	/** A flag as the API sends it and the columns have always held it: {@code 1} or {@code 0}. */
+	private static String flagText(Boolean value){
+		return value == null ? null : (value ? "1" : "0");
+	}
+
+	private static java.math.BigDecimal decimal(String value){
+		return value == null || value.isBlank() ? null : com.novapost.model.support.NpDecimalDeserializer.parse(value);
+	}
+
+	private static Boolean flag(String value){
+		return com.novapost.model.support.NpBooleanDeserializer.parse(value);
+	}
+
+	private static Integer integer(String value){
+		java.math.BigDecimal number = decimal(value);
+		return number == null ? null : Integer.valueOf(number.intValue());
+	}
 	public DatabaseConfig getDatabaseConfig(){
 		return databaseConfig;
 	}

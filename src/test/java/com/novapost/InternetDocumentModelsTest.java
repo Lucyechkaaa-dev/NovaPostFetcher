@@ -1,5 +1,7 @@
 package com.novapost;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.novapost.client.NovaPostClient;
@@ -19,8 +21,8 @@ public class InternetDocumentModelsTest {
     @Test
     void testInternetDocumentSaveRequestSerialization() throws Exception {
         InternetDocumentSaveRequest saveReq = new InternetDocumentSaveRequest(
-            null, "Sender", "Cash", LocalDate.of(2026, 4, 20), "Parcel", null, "1.5",
-            "WarehouseWarehouse", "1", "Electronics", "500",
+            null, "Sender", "Cash", LocalDate.of(2026, 4, 20), "Parcel", null, new BigDecimal("1.5"),
+            "WarehouseWarehouse", 1, "Electronics", new BigDecimal("500"),
             "city-senderRef-ref", "senderRef-ref", "senderRef-addr-ref", "contact-senderRef-ref", "+380501112233",
             "city-recipientRef-ref", "recipientRef-ref", "recipientRef-addr-ref", "contact-recipientRef-ref", "+380509998877",
             null, null
@@ -46,8 +48,11 @@ public class InternetDocumentModelsTest {
         );
 
         String json = mapper.writeValueAsString(filter);
-        assertTrue(json.contains("\"DateTimeFrom\":\"01.04.2026 00:00:00\""));
-        assertTrue(json.contains("\"DateTimeTo\":\"30.04.2026 23:59:59\""));
+        // the documented format is dd.MM.yyyy; a page is requested, so the list must be in paged mode (GetFullList=0)
+        assertTrue(json.contains("\"DateTimeFrom\":\"01.04.2026\""), json);
+        assertTrue(json.contains("\"DateTimeTo\":\"30.04.2026\""), json);
+        assertTrue(json.contains("\"Page\":1"), json);
+        assertTrue(json.contains("\"GetFullList\":0"), json);
     }
 
     @Test
@@ -76,7 +81,7 @@ public class InternetDocumentModelsTest {
         assertTrue(response.success());
         assertEquals(1, response.data().size());
         assertEquals("20450201234567", response.data().getFirst().intDocNumber());
-        assertEquals("55", response.data().getFirst().costOnSite());
+        assertEquals(new BigDecimal("55"), response.data().getFirst().costOnSite());
         assertEquals(LocalDate.of(2026, 4, 22), response.data().getFirst().estimatedDeliveryDate());
     }
 
@@ -133,7 +138,7 @@ public class InternetDocumentModelsTest {
 
         assertTrue(response.success());
         assertEquals(1, response.data().size());
-        assertEquals(75.0, response.data().getFirst().cost());
+        assertEquals(new BigDecimal("75.0"), response.data().getFirst().cost());
     }
 
     @Test
@@ -170,6 +175,10 @@ public class InternetDocumentModelsTest {
         String json = mapper.writeValueAsString(request);
 
         assertTrue(json.contains("\"calledMethod\":\"delete\""));
-        assertTrue(json.contains("\"DocumentRefs\":[\"doc-ref-123\"]"));
+        // the documentation sends DocumentRefs as a plain string
+        assertTrue(json.contains("\"DocumentRefs\":\"doc-ref-123\""), json);
+
+        String several = mapper.writeValueAsString(InternetDocumentDeleteRequest.of(java.util.List.of("a", "b")));
+        assertTrue(several.contains("\"DocumentRefs\":[\"a\",\"b\"]"), several);
     }
 }

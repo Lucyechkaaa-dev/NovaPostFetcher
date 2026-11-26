@@ -1,5 +1,7 @@
 package com.novapost;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.novapost.model.Settlement;
 import com.novapost.model.Warehouse;
@@ -30,8 +32,8 @@ public class ModelProjectorTest {
 				"12345", "Kyiv Branch 1", "Kiev Branch 1", "Khreshchatyk 1", "Khreshchatyk 1",
 				"0800500609", "PostOffice", "wh-ref-111", "1", "city-ref-999",
 				"Kyiv", "Kiev", "settlement-ref-777", "Kyiv",
-				"Kyivska", "Kyivskyi", "m.", "30.5234", "50.4501",
-				"1", "1", "1", "1", "1", "5", "1100", "30", "Working", "2026-01-01",
+				"Kyivska", "Kyivskyi", "m.", new BigDecimal("30.5234"), new BigDecimal("50.4501"),
+				true, true, true, true, true, 5, new BigDecimal("1100"), new BigDecimal("30"), "Working", LocalDateTime.of(2026, 1, 1, 0, 0),
 				"Branch", "Kyiv", "1", "01001", "01001", Map.of(), Map.of(), Map.of()
 		);
 
@@ -53,10 +55,10 @@ public class ModelProjectorTest {
 	@Test
 	void testProjectToMapCaseInsensitive() {
 		Settlement settlement = new Settlement(
-				"settle-ref-1", "City", "50.4501", "30.5234", "Kyiv",
+				"settle-ref-1", "City", new BigDecimal("50.4501"), new BigDecimal("30.5234"), "Kyiv",
 				"Kiev", "City", "City Ru", "region-1", "Kyivska",
 				"Kyivska Ru", "area-1", "Kyivska", "Kyivska Ru",
-				"01001", "01002", "8000000000", "1"
+				"01001", "01002", "8000000000", true
 		);
 
 		Map<String, Object> targetFields = new HashMap<>();
@@ -85,8 +87,8 @@ public class ModelProjectorTest {
 				"987", "Branch 5", "Branch 5 Ru", "Main St 10", "Main St 10 Ru",
 				"0800500609", "PostOffice", "wh-ref-222", "42", "city-ref-999",
 				"Lviv", "Lvov", "settlement-ref-888", "Lviv",
-				"Lvivska", "Lvivskyi", "m.", "24.0311", "49.8429",
-				"1", "1", "1", "1", "1", "2", "30", "30", "Working", "2026-01-01",
+				"Lvivska", "Lvivskyi", "m.", new BigDecimal("24.0311"), new BigDecimal("49.8429"),
+				true, true, true, true, true, 2, new BigDecimal("30"), new BigDecimal("30"), "Working", LocalDateTime.of(2026, 1, 1, 0, 0),
 				"Branch", "Lviv", "1", "79000", "79000", Map.of(), Map.of(), Map.of()
 		);
 
@@ -106,8 +108,8 @@ public class ModelProjectorTest {
 				"100", "Dnipro Branch 3", "Dnipro Branch 3 Ru", "Central Ave", "Central Ave Ru",
 				"0800500609", "PostOffice", "wh-ref-333", "15", "city-ref-555",
 				"Dnipro", "Dnepr", "settlement-ref-333", "Dnipro",
-				"Dnipropetrovska", "Dniprovskyi", "m.", "35.0462", "48.4647",
-				"1", "1", "1", "1", "1", "4", "1000", "30", "Working", "2026-01-01",
+				"Dnipropetrovska", "Dniprovskyi", "m.", new BigDecimal("35.0462"), new BigDecimal("48.4647"),
+				true, true, true, true, true, 4, new BigDecimal("1000"), new BigDecimal("30"), "Working", LocalDateTime.of(2026, 1, 1, 0, 0),
 				"Branch", "Dnipro", "1", "49000", "49000", Map.of(), Map.of(), Map.of()
 		);
 
@@ -125,16 +127,16 @@ public class ModelProjectorTest {
 	@Test
 	void testProjectAllToClassBatch() {
 		Settlement s1 = new Settlement(
-				"ref-1", "City", "46.4825", "30.7233", "Odesa",
+				"ref-1", "City", new BigDecimal("46.4825"), new BigDecimal("30.7233"), "Odesa",
 				"Odessa", "City", "City Ru", "region-2", "Odeska",
 				"Odeska Ru", "area-2", "Odeska", "Odeska Ru",
-				"65000", "65001", "5110100000", "1"
+				"65000", "65001", "5110100000", true
 		);
 		Settlement s2 = new Settlement(
-				"ref-2", "City", "49.9935", "36.2304", "Kharkiv",
+				"ref-2", "City", new BigDecimal("49.9935"), new BigDecimal("36.2304"), "Kharkiv",
 				"Kharkov", "City", "City Ru", "region-3", "Kharkivska",
 				"Kharkivska Ru", "area-3", "Kharkivska", "Kharkivska Ru",
-				"61000", "61001", "6310100000", "1"
+				"61000", "61001", "6310100000", true
 		);
 
 		List<SettlementRecordDto> results = projector.projectAllToClass(List.of(s1, s2), SettlementRecordDto.class);
@@ -149,10 +151,10 @@ public class ModelProjectorTest {
 	@Test
 	void testProjectAllToMapBatch() {
 		Settlement s1 = new Settlement(
-				"ref-1", "City", "46.4825", "30.7233", "Odesa",
+				"ref-1", "City", new BigDecimal("46.4825"), new BigDecimal("30.7233"), "Odesa",
 				"Odessa", "City", "City Ru", "region-2", "Odeska",
 				"Odeska Ru", "area-2", "Odeska", "Odeska Ru",
-				"65000", "65001", "5110100000", "1"
+				"65000", "65001", "5110100000", true
 		);
 
 		Map<String, Object> template = new HashMap<>();

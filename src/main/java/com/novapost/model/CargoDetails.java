@@ -2,6 +2,7 @@ package com.novapost.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -12,18 +13,18 @@ import java.util.List;
 public record CargoDetails(
 		String cargoType,
 		String description,
-		String weight,
-		String cost,
-		String seatsAmount,
-		String volumeGeneral,
+		BigDecimal weight,
+		BigDecimal cost,
+		Integer seatsAmount,
+		BigDecimal volumeGeneral,
 		List<InternetDocumentSaveRequest.OptionSeat> optionsSeat
 ){
 
 	public static final String DEFAULT_CARGO_TYPE = "Parcel";
 	public static final String DEFAULT_DESCRIPTION = "Goods";
-	public static final String DEFAULT_WEIGHT = "1.0";
-	public static final String DEFAULT_COST = "300";
-	public static final String DEFAULT_SEATS_AMOUNT = "1";
+	public static final BigDecimal DEFAULT_WEIGHT = new BigDecimal("1.0");
+	public static final BigDecimal DEFAULT_COST = new BigDecimal("300");
+	public static final Integer DEFAULT_SEATS_AMOUNT = 1;
 
 	public static CargoDetails ofPlaceholder(){
 		return new CargoDetails(
@@ -41,9 +42,9 @@ public record CargoDetails(
 		return new CargoDetails(
 				DEFAULT_CARGO_TYPE,
 				description,
-				String.valueOf(weightKg),
-				String.valueOf((int) Math.round(declaredCostUah)),
-				"1",
+				BigDecimal.valueOf(weightKg),
+				BigDecimal.valueOf(Math.round(declaredCostUah)),
+				1,
 				null,
 				null
 		);
@@ -52,17 +53,17 @@ public record CargoDetails(
 	public static CargoDetails ofBox(String description, double weightKg, double declaredCostUah,
 	                                 int widthCm, int lengthCm, int heightCm){
 		InternetDocumentSaveRequest.OptionSeat seat = InternetDocumentSaveRequest.OptionSeat.ofDimensions(
-				String.valueOf(widthCm),
-				String.valueOf(lengthCm),
-				String.valueOf(heightCm),
-				String.valueOf(weightKg)
+				BigDecimal.valueOf(widthCm),
+				BigDecimal.valueOf(lengthCm),
+				BigDecimal.valueOf(heightCm),
+				BigDecimal.valueOf(weightKg)
 		);
 		return new CargoDetails(
 				DEFAULT_CARGO_TYPE,
 				description,
-				String.valueOf(weightKg),
-				String.valueOf((int) Math.round(declaredCostUah)),
-				"1",
+				BigDecimal.valueOf(weightKg),
+				BigDecimal.valueOf(Math.round(declaredCostUah)),
+				1,
 				null,
 				List.of(seat)
 		);
@@ -75,21 +76,21 @@ public record CargoDetails(
 	public static class Builder{
 		private String cargoType = DEFAULT_CARGO_TYPE;
 		private String description = DEFAULT_DESCRIPTION;
-		private String weight = DEFAULT_WEIGHT;
-		private String cost = DEFAULT_COST;
-		private String seatsAmount = DEFAULT_SEATS_AMOUNT;
-		private String volumeGeneral;
+		private BigDecimal weight = DEFAULT_WEIGHT;
+		private BigDecimal cost = DEFAULT_COST;
+		private Integer seatsAmount = DEFAULT_SEATS_AMOUNT;
+		private BigDecimal volumeGeneral;
 		private List<InternetDocumentSaveRequest.OptionSeat> optionsSeat;
 
 		public Builder cargoType(String cargoType){ this.cargoType = cargoType; return this; }
 		public Builder description(String description){ this.description = description; return this; }
-		public Builder weight(String weight){ this.weight = weight; return this; }
-		public Builder weight(double weightKg){ this.weight = String.valueOf(weightKg); return this; }
-		public Builder cost(String cost){ this.cost = cost; return this; }
-		public Builder cost(double declaredCostUah){ this.cost = String.valueOf((int) Math.round(declaredCostUah)); return this; }
-		public Builder seatsAmount(String seatsAmount){ this.seatsAmount = seatsAmount; return this; }
-		public Builder seatsAmount(int seatsAmount){ this.seatsAmount = String.valueOf(seatsAmount); return this; }
-		public Builder volumeGeneral(String volumeGeneral){ this.volumeGeneral = volumeGeneral; return this; }
+		public Builder weight(BigDecimal weight){ this.weight = weight; return this; }
+		public Builder weight(double weightKg){ this.weight = BigDecimal.valueOf(weightKg); return this; }
+		public Builder cost(BigDecimal cost){ this.cost = cost; return this; }
+		public Builder cost(double declaredCostUah){ this.cost = BigDecimal.valueOf(Math.round(declaredCostUah)); return this; }
+		public Builder seatsAmount(Integer seatsAmount){ this.seatsAmount = seatsAmount; return this; }
+		public Builder volumeGeneral(BigDecimal volumeGeneral){ this.volumeGeneral = volumeGeneral; return this; }
+		public Builder volumeGeneral(double volumeM3){ this.volumeGeneral = BigDecimal.valueOf(volumeM3); return this; }
 		public Builder optionsSeat(List<InternetDocumentSaveRequest.OptionSeat> optionsSeat){ this.optionsSeat = optionsSeat; return this; }
 
 		public Builder addSeat(int widthCm, int lengthCm, int heightCm, double weightKg){
@@ -97,7 +98,7 @@ public record CargoDetails(
 				this.optionsSeat = new java.util.ArrayList<>();
 			}
 			this.optionsSeat.add(InternetDocumentSaveRequest.OptionSeat.ofDimensions(
-					String.valueOf(widthCm), String.valueOf(lengthCm), String.valueOf(heightCm), String.valueOf(weightKg)
+					BigDecimal.valueOf(widthCm), BigDecimal.valueOf(lengthCm), BigDecimal.valueOf(heightCm), BigDecimal.valueOf(weightKg)
 			));
 			return this;
 		}

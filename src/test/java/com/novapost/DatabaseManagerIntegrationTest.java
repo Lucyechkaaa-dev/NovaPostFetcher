@@ -1,5 +1,7 @@
 package com.novapost;
 
+import java.math.BigDecimal;
+
 import com.novapost.db.DatabaseConfig;
 import com.novapost.db.DatabaseManager;
 import com.novapost.model.InternetDocumentListItem;
@@ -40,11 +42,11 @@ public class DatabaseManagerIntegrationTest {
             dbManager.truncateTables();
 
             Settlement s = new Settlement(
-                "test-settlement-ref-1", "місто", "50.45", "30.52",
+                "test-settlement-ref-1", "місто", new BigDecimal("50.45"), new BigDecimal("30.52"),
                 "Київ", "Киев", "місто", "город",
                 "test-region", "Київська", "Киевская",
                 "test-area", "Києво-Святошинський", "Киево-Святошинский",
-                "01001", "01002", "8000000000", "1"
+                "01001", "01002", "8000000000", true
             );
 
             int sCount = dbManager.insertSettlements(List.of(s));
@@ -55,8 +57,8 @@ public class DatabaseManagerIntegrationTest {
                 "0800500609", "PostBranch", "test-wh-ref-1", "1",
                 "test-city-ref", "Київ", "Киев",
                 "test-settlement-ref-1", "Київ", "", "Київська", "місто",
-                "30.52", "50.45", "1", "1", "1", "1", "1", "2",
-                "30", "30", "Working", "2026-01-01", "Branch",
+                new BigDecimal("30.52"), new BigDecimal("50.45"), true, true, true, true, true, 2,
+                new BigDecimal("30"), new BigDecimal("30"), "Working", LocalDateTime.of(2026, 1, 1, 0, 0), "Branch",
                 "Kyiv", "1", "01", "01001",
                 Map.of("Monday", "08:00-21:00"), Map.of(), Map.of()
             );
@@ -68,9 +70,9 @@ public class DatabaseManagerIntegrationTest {
                 "test-doc-ref-1",
                 "20450000000001",
                 LocalDateTime.of(2026, 3, 10, 14, 30, 0),
-                "85.00",
-                "1.5",
-                "1",
+                new BigDecimal("85.00"),
+                new BigDecimal("1.5"),
+                1,
                 "test-senderRef-ref",
                 "test-recipientRef-ref",
                 "Sender Company",

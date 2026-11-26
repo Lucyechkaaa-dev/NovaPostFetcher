@@ -1,5 +1,7 @@
 package com.novapost.config;
 
+import com.novapost.client.NpModelStyle;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,11 +14,17 @@ public record AppConfig(
 		String dbPassword,
 		String apiUrl,
 		long pageDelayMs,
-		boolean helpRequested
+		boolean helpRequested,
+		NpModelStyle modelStyle
 ){
 
 	public static final String DEFAULT_API_URL = "https://api.novaposhta.ua/v2.0/json/";
 	public static final long DEFAULT_PAGE_DELAY_MS = 750;
+
+	/** Config without a model style: the {@link NpModelStyle#LEGACY} names this library has always sent. */
+	public AppConfig(String apiKey, String dbUrl, String dbUser, String dbPassword, String apiUrl, long pageDelayMs, boolean helpRequested){
+		this(apiKey, dbUrl, dbUser, dbPassword, apiUrl, pageDelayMs, helpRequested, NpModelStyle.LEGACY);
+	}
 
 	public static AppConfig fromArgs(String[] args){
 		Map<String, String> parsed = new HashMap<>();
@@ -82,7 +90,9 @@ public record AppConfig(
 			}
 		}
 
-		return new AppConfig(apiKey, dbUrl, dbUser, dbPassword, apiUrl, delay, help);
+		NpModelStyle modelStyle = NpModelStyle.parse(parsed.getOrDefault("model-style", parsed.get("modelstyle")));
+
+		return new AppConfig(apiKey, dbUrl, dbUser, dbPassword, apiUrl, delay, help, modelStyle);
 	}
 
 	public static AppConfig getConfig(String[] args){
@@ -130,6 +140,7 @@ public record AppConfig(
 				Optional:
 				  --delay=<MS>, -d <MS>           Inter-page rate limit delay in ms (default: 750)
 				  --api-url=<URL>                 Nova Post API URL (default: https://api.novaposhta.ua/v2.0/json/)
+				  --model-style=<STYLE>           legacy (default: Address, InternetDocument, ...) or documented (AddressGeneral, InternetDocumentGeneral, ...)
 				  --help, -h                      Show this help message
 				""");
 	}
@@ -144,6 +155,7 @@ public record AppConfig(
 				", apiUrl=" + apiUrl +
 				", pageDelayMs=" + pageDelayMs +
 				", helpRequested=" + helpRequested +
+				", modelStyle=" + modelStyle +
 				']';
 	}
 }

@@ -1,10 +1,13 @@
 package com.novapost.client;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.novapost.client.api.*;
 import com.novapost.model.*;
 
 import java.io.IOException;
@@ -23,10 +26,14 @@ public class NovaPostClient{
 	public static final String MODEL_INTERNET_DOCUMENT = "InternetDocument";
 	public static final String MODEL_TRACKING_DOCUMENT = "TrackingDocument";
 
+	/** The documented maximum number of shipments per tracking request. */
+	public static final int TRACKING_BATCH_SIZE = 100;
+
 	private final String apiKey;
 	private final String apiUrl;
 	private final HttpClient httpClient;
 	private final ObjectMapper objectMapper;
+	private final NpModelStyle modelStyle;
 
 	public NovaPostClient(String apiKey){
 		this(apiKey, DEFAULT_API_URL, HttpClient.newBuilder()
@@ -36,16 +43,87 @@ public class NovaPostClient{
 	}
 
 	public NovaPostClient(String apiKey, String apiUrl, HttpClient httpClient, ObjectMapper objectMapper){
+		this(apiKey, apiUrl, httpClient, objectMapper, NpModelStyle.LEGACY);
+	}
+
+	public NovaPostClient(String apiKey, String apiUrl, HttpClient httpClient, ObjectMapper objectMapper, NpModelStyle modelStyle){
 		this.apiKey = apiKey;
 		this.apiUrl = apiUrl;
 		this.httpClient = httpClient;
 		this.objectMapper = objectMapper;
+		this.modelStyle = modelStyle != null ? modelStyle : NpModelStyle.LEGACY;
 	}
 
+	/** The same client (shared HTTP client and mapper) sending the other style of model names. */
+	public NovaPostClient withModelStyle(NpModelStyle style){
+		return new NovaPostClient(apiKey, apiUrl, httpClient, objectMapper, style);
+	}
+
+	public NpModelStyle getModelStyle(){
+		return modelStyle;
+	}
+
+	/** Applies the {@link NpModelStyle}: in the documented style a legacy name such as {@code InternetDocument} becomes {@code InternetDocumentGeneral}. */
+	public String resolveModelName(String modelName){
+		return modelStyle == NpModelStyle.DOCUMENTED ? NpModel.documentedName(modelName) : modelName;
+	}
+
+	/**
+	 * The mapper of the client. A value that cannot be read as the type of its field (a date in an unknown format, a number that is not one)
+	 * is read as {@code null} and reported once in the log, so one odd value never fails a whole answer ({@link NpLenientValues}).
+	 * Call {@code clearProblemHandlers()} on the result for a strict mapper.
+	 */
 	public static ObjectMapper createDefaultMapper(){
 		return new ObjectMapper()
 				.registerModule(new Jdk8Module())
-				.registerModule(new JavaTimeModule());
+				.registerModule(new JavaTimeModule())
+				.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+				.addHandler(new com.novapost.model.support.NpLenientValues());
+	}
+
+	/** Prepares a call; nothing is sent until a terminal method of {@link NpCall} runs. */
+	public <R> NpCall<R> call(NpModel model, String method, Object properties, Class<R> type){
+		return new NpCall<>(this, model, method, properties, type);
+	}
+
+	public AddressApi address(){
+		return new AddressApi(this);
+	}
+
+	public CommonApi common(){
+		return new CommonApi(this);
+	}
+
+	public CounterpartyApi counterparty(){
+		return new CounterpartyApi(this);
+	}
+
+	public ContactPersonApi contactPerson(){
+		return new ContactPersonApi(this);
+	}
+
+	public InternetDocumentApi internetDocument(){
+		return new InternetDocumentApi(this);
+	}
+
+	public ScanSheetApi scanSheet(){
+		return new ScanSheetApi(this);
+	}
+
+	public AdditionalServiceApi additionalService(){
+		return new AdditionalServiceApi(this);
+	}
+
+	public CarCallApi courier(){
+		return new CarCallApi(this);
+	}
+
+	public TrackingApi tracking(){
+		return new TrackingApi(this);
+	}
+
+	public PrintApi print(){
+		return new PrintApi(this);
 	}
 
 	public NpResponse<Settlement> getSettlements(SettlementFilter filter) throws IOException, InterruptedException{
@@ -68,8 +146,9 @@ public class NovaPostClient{
 		return searchSettlements(SearchSettlementFilter.of(cityName, page, limit));
 	}
 
-	public NpResponse<SettlementStreet> searchSettlementStreets(SettlementStreetFilter filter) throws IOException, InterruptedException{
-		return execute(MODEL_ADDRESS, "searchSettlementStreets", filter, SettlementStreet.class);
+	/** The streets are in {@code data[0].Addresses}; see {@link SettlementStreetSearchResult#streets()}. */
+	public NpResponse<SettlementStreetSearchResult> searchSettlementStreets(SettlementStreetFilter filter) throws IOException, InterruptedException{
+		return execute(MODEL_ADDRESS, "searchSettlementStreets", filter, SettlementStreetSearchResult.class);
 	}
 
 	public NpResponse<Street> getStreet(StreetFilter filter) throws IOException, InterruptedException{
@@ -129,18 +208,50 @@ public class NovaPostClient{
 	}
 
 	public JsonNode getTrackingNode(String ttn, String phone) throws IOException, InterruptedException{
-		java.util.Map<String, String> doc = new java.util.HashMap<>();
-		doc.put("DocumentNumber", ttn);
-		doc.put("Phone", phone != null ? phone : "");
-		java.util.Map<String, Object> props = java.util.Map.of("Documents", java.util.List.of(doc));
-		return executeForDataNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", props);
+		return getTrackingRoot(ttn, phone).path("data");
 	}
 
 	public JsonNode getTrackingNode(List<String> ttns) throws IOException, InterruptedException{
-		java.util.List<java.util.Map<String, String>> docs = ttns.stream()
-				.map(t -> java.util.Map.of("DocumentNumber", t, "Phone", ""))
-				.toList();
-		return executeForDataNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", java.util.Map.of("Documents", docs));
+		return getTrackingRoot(ttns).path("data");
+	}
+
+	/**
+	 * The full response envelope for one TTN, so callers can look at {@code success} and {@code errors}.
+	 * <p>With an API key the answer holds the complete data of the shipment, including the correct sender and recipient. Without a key
+	 * (the method also works unauthorized) the data is limited: the sender and recipient data is replaced with the data that belongs to
+	 * the phone number in the request. A phone number ({@code phone}) of the recipient or the sender returns extended information.
+	 */
+	public JsonNode getTrackingRoot(String ttn, String phone) throws IOException, InterruptedException{
+		java.util.Map<String, String> doc = new java.util.HashMap<>();
+		doc.put("DocumentNumber", ttn);
+		doc.put("Phone", phone != null ? phone : "");
+		return executeForRootNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", java.util.Map.of("Documents", java.util.List.of(doc)));
+	}
+
+	/**
+	 * The response envelope for many TTNs. The API accepts up to {@link #TRACKING_BATCH_SIZE} shipments per request, so longer
+	 * lists are split and the {@code data} arrays are merged; the first failing response is returned as is.
+	 */
+	public JsonNode getTrackingRoot(List<String> ttns) throws IOException, InterruptedException{
+		ArrayNode merged = objectMapper.createArrayNode();
+		JsonNode last = null;
+		for(int from = 0; from < ttns.size(); from += TRACKING_BATCH_SIZE){
+			java.util.List<java.util.Map<String, String>> docs = ttns.subList(from, Math.min(ttns.size(), from + TRACKING_BATCH_SIZE)).stream()
+					.map(t -> java.util.Map.of("DocumentNumber", t, "Phone", ""))
+					.toList();
+			last = executeForRootNode(MODEL_TRACKING_DOCUMENT, "getStatusDocuments", java.util.Map.of("Documents", docs));
+			boolean failed = !last.path("success").asBoolean(true) || (last.path("errors").isArray() && !last.path("errors").isEmpty());
+			if(failed){
+				return last;
+			}
+			if(last.path("data").isArray()){
+				merged.addAll((ArrayNode) last.path("data"));
+			}
+		}
+		if(last == null){
+			return objectMapper.createObjectNode().put("success", true).set("data", merged);
+		}
+		return ttns.size() <= TRACKING_BATCH_SIZE ? last : ((com.fasterxml.jackson.databind.node.ObjectNode) last.deepCopy()).set("data", merged);
 	}
 
 	private List<TrackingStatus> toTrackingStatuses(JsonNode dataNode){
@@ -152,6 +263,11 @@ public class NovaPostClient{
 
 	public byte[] printMarking(List<String> ttns, PrintFormat format) throws IOException, InterruptedException{
 		return downloadMarkingPdf(this.apiKey, ttns, format, this.httpClient);
+	}
+
+	/** Downloads whatever the print request describes (PDF or HTML). */
+	public byte[] print(PrintRequest request) throws IOException, InterruptedException{
+		return downloadPrint(request.toUrl(apiKey), request.type().isPdf(), request.ids().toString(), this.httpClient);
 	}
 
 	public byte[] printMarking(String ttn, PrintFormat format) throws IOException, InterruptedException{
@@ -195,8 +311,14 @@ public class NovaPostClient{
 		if(format == null){
 			format = PrintFormat.ZEBRA;
 		}
-		String targetUrl = format.buildUrl(apiKey, ttns);
+		return downloadPrint(format.buildUrl(apiKey, ttns), format.getType().isPdf(), String.valueOf(ttns), client);
+	}
 
+	/**
+	 * Downloads a print URL with the same 429 backoff as the JSON calls. When a PDF is expected, a 2xx answer that does not start
+	 * with {@code %PDF} (an HTML error page, for instance) is rejected instead of being returned as a "document".
+	 */
+	static byte[] downloadPrint(String targetUrl, boolean expectPdf, String label, HttpClient client) throws IOException, InterruptedException{
 		int maxRetries = 5;
 		long backoffMs = 1500;
 
@@ -204,7 +326,7 @@ public class NovaPostClient{
 			HttpRequest httpRequest = HttpRequest.newBuilder()
 					.uri(URI.create(targetUrl))
 					.timeout(Duration.ofSeconds(30))
-					.header("Accept", "application/pdf, application/octet-stream, */*")
+					.header("Accept", "application/pdf, application/octet-stream, text/html, */*")
 					.GET()
 					.build();
 
@@ -226,7 +348,11 @@ public class NovaPostClient{
 
 			byte[] body = response.body();
 			if(body == null || body.length == 0){
-				throw new IOException("Received empty PDF response from Nova Post print service for TTN: " + ttns);
+				throw new IOException("Received empty response from Nova Post print service for: " + label);
+			}
+			if(expectPdf && !(body.length >= 4 && body[0] == '%' && body[1] == 'P' && body[2] == 'D' && body[3] == 'F')){
+				String head = new String(body, 0, Math.min(body.length, 160), java.nio.charset.StandardCharsets.UTF_8).replaceAll("\\s+", " ");
+				throw new IOException("Nova Post print service returned something that is not a PDF for " + label + ": " + head);
 			}
 
 			return body;
@@ -237,7 +363,7 @@ public class NovaPostClient{
 
 	public <T> JsonNode executeForRootNode(String modelName, String calledMethod, T properties)
 			throws IOException, InterruptedException{
-		NpRequest<T> request = new NpRequest<>(apiKey, modelName, calledMethod, properties);
+		NpRequest<T> request = new NpRequest<>(apiKey, resolveModelName(modelName), calledMethod, properties);
 		String requestJson = objectMapper.writeValueAsString(request);
 
 		int maxRetries = 5;
@@ -273,7 +399,7 @@ public class NovaPostClient{
 			boolean isRateLimitError = false;
 			if(errorsNode.isArray()){
 				for(JsonNode err : errorsNode){
-					String text = err.asText();
+					String text = err.isValueNode() ? err.asText() : err.toString(); // an error may be an object keyed by the waybill
 					if(text != null && (text.toLowerCase().contains("to many requests") || text.toLowerCase().contains("too many requests"))){
 						isRateLimitError = true;
 						break;
