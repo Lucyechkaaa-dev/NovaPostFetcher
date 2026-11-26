@@ -1,0 +1,54 @@
+package com.novapost.model.courier;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.novapost.model.support.NpDateDeserializer;
+import com.novapost.model.support.NpDecimalDeserializer;
+import com.novapost.model.support.NpDecimalSerializer;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Request model for {@code CarCallGeneral/updateCourierCall}.
+ * Docs: https://developers.novaposhta.ua/view/model/96141693-eaae-11ef-84e0-48df37b921da
+ * <p>Generated from src/test/resources/novaposhta/api-spec.txt by tools/ModelGenerator.java;
+ * change the spec and re-run (to hand-edit this file, add the keep marker described in the generator).
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record CourierCallUpdateRequest(
+		@JsonProperty("Ref") String ref,
+		@JsonProperty("PreferredDeliveryDate") @JsonFormat(pattern = "dd.MM.yyyy") @JsonDeserialize(using = NpDateDeserializer.class) LocalDate preferredDeliveryDate,
+		@JsonProperty("PlanedWeight") @JsonSerialize(using = NpDecimalSerializer.class) @JsonDeserialize(using = NpDecimalDeserializer.class) BigDecimal planedWeight,
+		@JsonProperty("TimeInterval") String timeInterval
+){
+
+	public static Builder builder(){
+		return new Builder();
+	}
+
+	public static final class Builder{
+		private String ref;
+		private LocalDate preferredDeliveryDate;
+		private BigDecimal planedWeight;
+		private String timeInterval;
+
+		public Builder ref(String ref){ this.ref = ref; return this; }
+		public Builder preferredDeliveryDate(LocalDate preferredDeliveryDate){ this.preferredDeliveryDate = preferredDeliveryDate; return this; }
+		public Builder planedWeight(BigDecimal planedWeight){ this.planedWeight = planedWeight; return this; }
+		public Builder timeInterval(String timeInterval){ this.timeInterval = timeInterval; return this; }
+
+		public CourierCallUpdateRequest build(){
+			return new CourierCallUpdateRequest(ref, preferredDeliveryDate, planedWeight, timeInterval);
+		}
+	}
+}
