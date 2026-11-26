@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Number": "102-00265830",
+      "Ref": "c1d8788a-e7be-11ef-b619-005056bdc0e9",
+      "TimeIntervalDescription": "08:00 - 18:00",
+      "PreferredDeliveryDate": "11.02.2025",
+      "SenderAddressDescription": "Київ, вул. Лісківська 5"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "DoorsDoors",
+      "Description": "Двері-Двері"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

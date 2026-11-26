@@ -1,0 +1,5 @@
+{
+  "success": true,
+  "data": [{"DeliveryDate": {"date": "2024-07-10 18:00:00.000000", "timezone_type": 3, "timezone": "Europe/Kiev"}}],
+  "errors": [], "warnings": [], "info": [], "messageCodes": [], "errorCodes": [], "warningCodes": [], "infoCodes": []
+}

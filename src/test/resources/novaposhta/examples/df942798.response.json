@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": [
+    {
+      "TypeDocument": "InternetDocument",
+      "IntDocNumber": "20600000002545",
+      "EstimatedDeliveryDate": "26.11.2026",
+      "CostOnSite": "45",
+      "Ref": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

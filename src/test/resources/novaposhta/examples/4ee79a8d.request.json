@@ -1,0 +1,10 @@
+{
+  "Note": "Довільний опис",
+  "OrderType": "orderCargoReturn",
+  "ReturnAddressRef": "00000000-0000-0000-0000-000000000000",
+  "IntDocNumber": "206004560074695",
+  "PaymentMethod": "Cash",
+  "Reason": "00000000-0000-0000-0000-000000000000",
+  "OnlyGetPricing": "1",
+  "SubtypeReason": "00000000-0000-0000-0000-000000000000"
+}

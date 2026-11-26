@@ -1,0 +1,23 @@
+{
+  "Ref": "00000000-0000-0000-0000-000000000000",
+  "PayerType": "ThirdPerson",
+  "PaymentMethod": "NonCash",
+  "DateTime": "25.11.2026",
+  "CargoType": "Cargo",
+  "VolumeGeneral": "0.45",
+  "Weight": "0.5",
+  "ServiceType": "DoorsWarehouse",
+  "SeatsAmount": "2",
+  "Description": "Додатковий опис відправлення",
+  "Cost": "15000",
+  "CitySender": "00000000-0000-0000-0000-000000000000",
+  "Sender": "00000000-0000-0000-0000-000000000000",
+  "SenderAddress": "00000000-0000-0000-0000-000000000000",
+  "ContactSender": "00000000-0000-0000-0000-000000000000",
+  "SendersPhone": "380660000000",
+  "CityRecipient": "00000000-0000-0000-0000-000000000000",
+  "Recipient": "00000000-0000-0000-0000-000000000000",
+  "RecipientAddress": "00000000-0000-0000-0000-000000000000",
+  "ContactRecipient": "00000000-0000-0000-0000-000000000000",
+  "RecipientsPhone": "380660000000"
+}

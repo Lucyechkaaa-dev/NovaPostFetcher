@@ -1,0 +1,34 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Number": "20600000065609",
+      "PayerType": "Sender",
+      "PaymentMethod": "Cash",
+      "WarehouseRef": "00000000-0000-0000-0000-000000000000",
+      "WarehouseDescription": "Відділення №23 (до 30 кг): просп. М. Бажана, 24/1 (м. Позняки)",
+      "AddressDescription": "просп. М. Бажана, 24/1 (м. Позняки)",
+      "StreetDescription": "просп. М. Бажана",
+      "BuildingNumber": "24/1",
+      "CityRecipient": "00000000-0000-0000-0000-000000000000",
+      "CityRecipientDescription": "Київ",
+      "SettlementRecipient": "00000000-0000-0000-0000-000000000000",
+      "SettlementRecipientDescription": "Київ",
+      "SettlementType": "00000000-0000-0000-0000-000000000000",
+      "CounterpartyRecipientRef": "00000000-0000-0000-0000-000000000000",
+      "CounterpartyRecipientDescription": "101-10378782",
+      "RecipientName": "Іванов Іван Іванович",
+      "PhoneSender": "380675387254",
+      "PhoneRecipient": "380991234567",
+      "DocumentWeight": "1"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "data": [
+    {
+      "OrderRef": "00000000-0000-0000-0000-000000000000",
+      "OrderNumber": "102-00010160",
+      "DateTime": "25.11.2026 12:00:00",
+      "DocumentNumber": "20600000065470",
+      "Note": "Опис причини переадресування",
+      "CityRecipient": "Київ",
+      "RecipientAddress": "Хрещатик 1, кв 1",
+      "CounterpartyRecipient": "Приватна особа",
+      "RecipientName": "Іванов Іван Іванович",
+      "PhoneRecipient": "380675387254",
+      "PayerType": "Recipient",
+      "DeliveryCost": "25",
+      "EstimatedDeliveryDate": "26.11.2026",
+      "ExpressWaybillNumber": "59000042661412",
+      "ExpressWaybillStatus": "Готується до відправлення"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

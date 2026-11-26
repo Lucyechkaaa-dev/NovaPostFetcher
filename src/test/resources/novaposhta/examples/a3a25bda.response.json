@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Іванов Іван Іванович",
+      "LastName": "Іванов",
+      "FirstName": "Іван",
+      "MiddleName": "Іванович",
+      "Phones": "380997979789",
+      "Email": "null"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Іванов Іван Іванович",
+      "FirstName": "Іван",
+      "MiddleName": "Іванович",
+      "LastName": "Іванов",
+      "Counterparty": "",
+      "OwnershipForm": "00000000-0000-0000-0000-000000000000",
+      "OwnershipFormDescription": "ФОП",
+      "EDRPOU": "12345678",
+      "CounterpartyType": "PrivatePerson",
+      "ContactPerson": "Іванов Іван Іванович"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

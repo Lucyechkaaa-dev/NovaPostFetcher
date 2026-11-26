@@ -1,0 +1,43 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "SettlementType": "00000000-0000-0000-0000-000000000000",
+      "Latitude": "50.450418000000000",
+      "Longitude": "30.523541000000000",
+      "Description": "Київ",
+      "DescriptionRu": "Киев",
+      "SettlementTypeDescription": "місто",
+      "SettlementTypeDescriptionRu": "город",
+      "Region": "",
+      "RegionsDescription": "Київська",
+      "RegionsDescriptionRu": "Киевская",
+      "Area": "00000000-0000-0000-0000-000000000000",
+      "AreaDescription": "Київська область",
+      "AreaDescriptionRu": "Киевская область",
+      "Index1": "001001",
+      "Index2": "004655",
+      "IndexCOATSU1": "3200000000",
+      "Delivery1": "1",
+      "Delivery2": "1",
+      "Delivery3": "1",
+      "Delivery4": "1",
+      "Delivery5": "1",
+      "Delivery6": "1",
+      "Delivery7": "0",
+      "Warehouse": "1",
+      "Conglomerates": [
+        "00000000-0000-0000-0000-000000000000",
+        "00000000-0000-0000-0000-000000000000"
+      ]
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

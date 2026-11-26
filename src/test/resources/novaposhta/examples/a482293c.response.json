@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Description": "№1",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Number": "105-00003134",
+      "Date": "01.01.2022",
+      "Errors": [],
+      "Warnings": [],
+      "Data": null,
+      "Success": [
+        {
+          "Ref": "2f48a93a-14d4-11ee-a60f-48df37b921db",
+          "Number": "20450733330073"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

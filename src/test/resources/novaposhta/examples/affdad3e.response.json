@@ -1,0 +1,27 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Filtered": [
+        {
+          "Ref": "cd00107e-2e73-41eb-9056-85a9931c6223",
+          "Description": "Пакування на поштоматі",
+          "DescriptionRu": " ",
+          "Length": "0.0",
+          "Width": "0.0",
+          "Height": "0.0",
+          "VolumetricWeight": "0.00",
+          "TypeOfPacking": " ",
+          "PackagingForPlace": "1"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

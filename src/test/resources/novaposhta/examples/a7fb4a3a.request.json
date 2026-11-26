@@ -1,0 +1,14 @@
+{
+  "BuildingNumber": "4",
+  "NoteAddressRecipient": "2",
+  "RecipientSettlement": "00000000-0000-0000-0000-000000000000",
+  "RecipientWarehouse": "00000000-0000-0000-0000-000000000000",
+  "IntDocNumber": "206004560074695",
+  "PaymentMethod": "Cash",
+  "Reason": "00000000-0000-0000-0000-000000000000",
+  "SubtypeReason": "00000000-0000-0000-0000-000000000000",
+  "Note": "Довільний опис",
+  "OrderType": "orderCargoReturn",
+  "ReturnAddressRef": "00000000-0000-0000-0000-000000000000",
+  "RecipientSettlementStreet": "00000000-0000-0000-0000-000000000000"
+}

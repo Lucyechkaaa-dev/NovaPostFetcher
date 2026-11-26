@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": [
+    {
+      "OrderRef": "00000000-0000-0000-0000-000000000000",
+      "OrderNumber": "102-00010160",
+      "OrderStatus": "Дані в ЕН змінено",
+      "DocumentNumber": "20600000066986",
+      "DateTime": "25.11.2026",
+      "BeforeChangeSenderCounterparty": "ТОВ Яблуневий сад",
+      "AfterChangeChangeSenderCounterparty": "ФОП Іванов І.І.",
+      "Cost": "40",
+      "BeforeChangeSenderPhone": "380675559879",
+      "AfterChangeSenderPhone": "380664561237"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

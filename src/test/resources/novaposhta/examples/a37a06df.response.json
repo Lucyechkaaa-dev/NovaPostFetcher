@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Description": "Талісман ТОВ",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "City": "00000000-0000-0000-0000-000000000000",
+      "Counterparty": "null",
+      "FirstName": "Іван",
+      "LastName": "Іванов",
+      "MiddleName": "Іванович",
+      "OwnershipFormRef": "00000000-0000-0000-0000-000000000000",
+      "OwnershipFormDescription": "ТОВ",
+      "EDRPOU": "37193071",
+      "CounterpartyType": "Organization"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Хрещатик",
+      "StreetsTypeRef": "00000000-0000-0000-0000-000000000000",
+      "StreetsType": "00000000-0000-0000-0000-000000000000"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

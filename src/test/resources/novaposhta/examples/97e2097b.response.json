@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "data": [
+    {
+      "StatusDescription": "Готово до виконання",
+      "SenderSettlementRef": "e718a680-4b33-11e4-ab6d-005056801329",
+      "Ref": "c1d8788a-e7be-11ef-b619-005056bdc0e9",
+      "TimeInterval": "CityPickingTimeInterval6",
+      "PlanedWeight": "13.00",
+      "Number": "102-00265830"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

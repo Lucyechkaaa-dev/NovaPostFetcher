@@ -1,0 +1,14 @@
+{
+  "Ref": "00000000-0000-0000-0000-000000000000",
+  "OnlyGetPricing": true,
+  "RecipientSettlement": "00000000-0000-0000-0000-000000000000",
+  "RecipientWarehouse": "00000000-0000-0000-0000-000000000000",
+  "IntDocNumber": "20450123456789",
+  "RecipientSettlementStreet": "00000000-0000-0000-0000-000000000000",
+  "PaymentMethod": "Cash",
+  "BuildingNumber": "15",
+  "OrderType": "orderCargoReturn",
+  "NoteAddressRecipient": "",
+  "Reason": "00000000-0000-0000-0000-000000000000",
+  "SubtypeReason": "00000000-0000-0000-0000-000000000000"
+}

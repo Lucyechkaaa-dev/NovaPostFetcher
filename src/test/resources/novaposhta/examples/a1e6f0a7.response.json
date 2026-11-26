@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Description": "Київ",
+      "DescriptionRu": "Киев",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Delivery1": "1",
+      "Delivery2": "1",
+      "Delivery3": "1",
+      "Delivery4": "1",
+      "Delivery5": "1",
+      "Delivery6": "0",
+      "Delivery7": "0",
+      "Area": "00000000-0000-0000-0000-000000000000",
+      "SettlementType": "00000000-0000-0000-0000-000000000000",
+      "IsBranch": "0",
+      "PreventEntryNewStreetsUser": "null",
+      "Conglomerates": "null",
+      "CityID": "890",
+      "SettlementTypeDescriptionRu": "село",
+      "SettlementTypeDescription": "село"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

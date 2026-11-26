@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "AreasCenter": "00000000-0000-0000-0000-000000000000",
+      "Description": "Барський",
+      "RegionType": "район"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

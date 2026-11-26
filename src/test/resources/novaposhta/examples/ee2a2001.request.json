@@ -1,0 +1,8 @@
+{
+  "ContactSenderRef": "00000000-0000-0000-0000-000000000000",
+  "PreferredDeliveryDate": "29.12.2023",
+  "PlanedWeight": "200",
+  "TimeInterval": "CityPickingTimeInterval3",
+  "CounterpartySender": "00000000-0000-0000-0000-000000000000",
+  "AddressSenderRef": "00000000-0000-0000-0000-000000000000"
+}

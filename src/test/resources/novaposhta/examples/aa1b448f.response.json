@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": [{
+    "Ref": "00000000-0000-0000-0000-000000000000",
+    "DateTime": "25.11.2026",
+    "PreferredDeliveryDate": "26.11.2026",
+    "Weight": "1",
+    "SeatsAmount": "2",
+    "IntDocNumber": "",
+    "Cost": "500",
+    "CitySender": "00000000-0000-0000-0000-000000000000",
+    "CityRecipient": "00000000-0000-0000-0000-000000000000",
+    "State": "",
+    "SenderAddress": "00000000-0000-0000-0000-000000000000",
+    "RecipientAddress": "00000000-0000-0000-0000-000000000000",
+    "CostOnSite": "45",
+    "PayerType": "Sender",
+    "PaymentMethod": "Cash",
+    "AfterpaymentOnGoodsCost": "500",
+    "PackingNumber": "123456"
+  }],
+  "errors": [], "warnings": [], "info": [], "messageCodes": [], "errorCodes": [], "warningCodes": [], "infoCodes": []
+}

@@ -1,0 +1,39 @@
+{
+  "success": true,
+  "data": [
+    {
+      "SettlementType": "",
+      "BuildingNumber": "15",
+      "PhoneSender": "",
+      "WarehouseDescription": "Відділення №1: вул. Ветеринарна, 22 (заїзд з вул. Європейська \"Меблевий квартал\")",
+      "Number": "102-12345678",
+      "PhoneRecipient": "380991234567",
+      "PayerType": "Sender",
+      "DocumentWeight": "",
+      "SettlementRecipient": "e71d006d-4b33-11e4-ab6d-005056801329",
+      "NoteAddressRecipient": "Додаткова інформація про адресу отримувача",
+      "PaymentMethod": "Cash",
+      "InternationalDeliveryType": "",
+      "CityRecipient": "db5c8892-391c-11dd-90d9-001a92567626",
+      "ServiceType": "WarehouseWarehouse",
+      "SettlementRecipientDescription": "Полтава",
+      "EdrpouRecipient": "",
+      "AddressDescription": "м. Полтава, вул. Половки, 15",
+      "CounterpartyRecipientRef": "00000000-0000-0000-0000-000000000000",
+      "RecipientSettlementStreet": "09b447c0-6470-11ea-a970-b8830365ade4",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "WarehouseRef": "aaada586-b04f-11e8-ad0d-005056b24375",
+      "CounterpartyRecipientDescription": "Приватна особа",
+      "CityRecipientDescription": "Полтава",
+      "StreetDescription": "Половки",
+      "RecipientName": "Іванов Іван Іванович"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

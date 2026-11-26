@@ -1,0 +1,25 @@
+{
+  "PayerType": "Sender",
+  "PaymentMethod": "Cash",
+  "DateTime": "25.11.2026",
+  "CargoType": "Pallet",
+  "Weight": "280",
+  "ServiceType": "DoorsDoors",
+  "SeatsAmount": "2",
+  "Description": "Додатковий опис відправлення",
+  "Cost": "15000",
+  "CitySender": "00000000-0000-0000-0000-000000000000",
+  "Sender": "00000000-0000-0000-0000-000000000000",
+  "SenderAddress": "00000000-0000-0000-0000-000000000000",
+  "ContactSender": "00000000-0000-0000-0000-000000000000",
+  "SendersPhone": "380660000000",
+  "CityRecipient": "00000000-0000-0000-0000-000000000000",
+  "Recipient": "00000000-0000-0000-0000-000000000000",
+  "RecipientAddress": "00000000-0000-0000-0000-000000000000",
+  "ContactRecipient": "00000000-0000-0000-0000-000000000000",
+  "RecipientsPhone": "380660000000",
+  "OptionsSeat": [
+    {"volumetricVolume": "10", "volumetricWidth": "30", "volumetricLength": "30", "volumetricHeight": "30", "weight": "20"},
+    {"volumetricVolume": "10", "volumetricWidth": "30", "volumetricLength": "30", "volumetricHeight": "30", "weight": "20"}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "Documents",
+      "Description": "Документи"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

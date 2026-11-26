@@ -1,0 +1,11 @@
+{
+  "FirstName": "",
+  "MiddleName": "",
+  "LastName": "",
+  "Phone": "380997979789",
+  "Email": "test@i.com",
+  "CounterpartyType": "Organization",
+  "EDRPOU": "12345678",
+  "CounterpartyProperty": "ThirdPerson",
+  "CityRef": "00000000-0000-0000-0000-000000000000"
+}

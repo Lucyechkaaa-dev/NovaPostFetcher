@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data": [{
+    "StreetsAvailability": true,
+    "RegionTypesCode": "",
+    "AddressDeliveryAllowed": true,
+    "TotalCount": "235",
+    "Addresses": [{
+      "Present": "м. Київ, Київська обл.",
+      "Warehouses": 6382,
+      "MainDescription": "Київ",
+      "Area": "Київська",
+      "Region": " ",
+      "SettlementTypeCode": "м.",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "DeliveryCity": "00000000-0000-0000-0000-000000000000",
+      "AddressDeliveryAllowed": true,
+      "StreetsAvailability": true,
+      "ParentRegionTypes": "область",
+      "ParentRegionCode": "обл.",
+      "RegionTypes": " ",
+      "RegionTypesCode": " "
+    }],
+    "Warehouses": "568",
+    "MainDescription": "Київ",
+    "Area": "обл",
+    "Region": "Київська",
+    "SettlementTypeCode": "м.",
+    "Ref": "00000000-0000-0000-0000-000000000000",
+    "DeliveryCity": "00000000-0000-0000-0000-000000000000",
+    "Present": "м. Київ, Київська обл.",
+    "RegionTypes": "",
+    "ParentRegionCode": "обл.",
+    "ParentRegionTypes": "область"
+  }],
+  "errors": [], "warnings": [], "info": [], "messageCodes": [], "errorCodes": [], "warningCodes": [], "infoCodes": []
+}

@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": [
+    {
+      "DocumentRefs": {
+        "Errors": [],
+        "Success": [
+          {
+            "Ref": "b5bfee68-0000-1111-2223-48df37b921da",
+            "Number": "20450123456789",
+            "Document": "751299fb-0000-2222-3333-48df37b921da"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

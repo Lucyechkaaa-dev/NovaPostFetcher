@@ -1,0 +1,11 @@
+{
+  "Ref": "00000000-0000-0000-0000-000000000000",
+  "CityRef": "00000000-0000-0000-0000-000000000000",
+  "FirstName": "Іван",
+  "MiddleName": "Іванович",
+  "LastName": "Іванов",
+  "Phone": "380997979789",
+  "Email": "test@i.com",
+  "CounterpartyType": "PrivatePerson",
+  "CounterpartyProperty": "Recipient"
+}

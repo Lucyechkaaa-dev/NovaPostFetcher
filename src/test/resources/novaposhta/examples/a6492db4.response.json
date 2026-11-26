@@ -1,0 +1,22 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Гофрокартон 3-шаровий",
+      "DescriptionRu": "Гофрокартон 3-слойный",
+      "Length": "1000.0",
+      "Width": "1000.0",
+      "Height": "0.0",
+      "VolumetricWeight": "0.00",
+      "TypeOfPacking": ""
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

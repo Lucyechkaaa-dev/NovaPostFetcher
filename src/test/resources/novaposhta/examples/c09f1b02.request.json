@@ -1,0 +1,11 @@
+{
+  "IntDocNumber": "206004560074695",
+  "PaymentMethod": "Cash",
+  "OrderType": "orderChangeEW",
+  "SenderContactName": "Іванов Іван Іванович",
+  "SenderPhone": "380685024447",
+  "Recipient": "00000000-0000-0000-0000-000000000000",
+  "RecipientContactName": "Іванов Іван Іванович",
+  "RecipientPhone": "380685024447",
+  "PayerType": "Recipient"
+}

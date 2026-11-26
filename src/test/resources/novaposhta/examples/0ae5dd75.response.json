@@ -1,0 +1,46 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Іванов Іван Іванович",
+      "FirstName": "Іван",
+      "MiddleName": "Іванович",
+      "LastName": "Іванов",
+      "Counterparty": "00000000-0000-0000-0000-000000000000",
+      "OwnershipForm": "00000000-0000-0000-0000-000000000001",
+      "OwnershipFormDescription": "Null",
+      "EDRPOU": "Null",
+      "CounterpartyType": "PrivatePerson",
+      "ContactPerson": [
+        {
+          "success": true,
+          "data": [
+            {
+              "Ref": "c80e9610-e98b-11ef-b619-005056bdc0e9",
+              "Description": "Іванов Іван Іванович",
+              "LastName": "Іванов",
+              "FirstName": "Іван",
+              "MiddleName": "Іванович"
+            }
+          ],
+          "errors": [],
+          "translatedErrors": [],
+          "warnings": [],
+          "info": [],
+          "messageCodes": [],
+          "errorCodes": [],
+          "warningCodes": [],
+          "infoCodes": []
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

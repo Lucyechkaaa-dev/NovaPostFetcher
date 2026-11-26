@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": [
+    {
+      "succeeded": [
+        20450009111502,
+        20450009111503
+      ],
+      "Barcode": "102-00258214"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

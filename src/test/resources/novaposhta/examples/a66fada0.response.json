@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Шина легкова R 13-14",
+      "DescriptionRu": "Шина легковая R 13-14",
+      "Weight": "14.90",
+      "DescriptionType": "Tires"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

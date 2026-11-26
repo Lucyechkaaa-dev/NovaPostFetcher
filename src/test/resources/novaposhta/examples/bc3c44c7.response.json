@@ -1,0 +1,21 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Назва організації",
+      "FirstName": "Назва організації",
+      "OwnershipForm": "00000000-0000-0000-0000-000000000001",
+      "OwnershipFormDescription": "ФОП",
+      "EDRPOU": "32145678",
+      "CounterpartyType": "PrivatePerson"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

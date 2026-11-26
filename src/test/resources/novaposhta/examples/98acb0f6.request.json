@@ -1,0 +1,17 @@
+{
+  "IntDocNumber": "206004560074695",
+  "PaymentMethod": "Cash",
+  "Note": "Довільний опис",
+  "OrderType": "orderRedirecting",
+  "Recipient": "00000000-0000-0000-0000-000000000000",
+  "RecipientContactName": "Іванов Іван Іванович",
+  "RecipientPhone": "380685024447",
+  "PayerType": "Recipient",
+  "Customer": "Sender",
+  "ServiceType": "WarehouseWarehouse",
+  "RecipientSettlement": "00000000-0000-0000-0000-000000000000",
+  "RecipientSettlementStreet": "00000000-0000-0000-0000-000000000000",
+  "BuildingNumber": "15",
+  "NoteAddressRecipient": "Щось від свого імені",
+  "RecipientWarehouse": "00000000-0000-0000-0000-000000000000"
+}

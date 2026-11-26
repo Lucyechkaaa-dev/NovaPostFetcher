@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "data": [
+    {
+      "SiteKey": "10119",
+      "Description": "Відділення №1: вул. М. Грушевського, 3",
+      "DescriptionRu": "Отделение №1: ул. М. Грушевского, 3",
+      "ShortAddress": "Заболотів, М. Грушевського, 3",
+      "ShortAddressRu": "Заболотов, Грушевского, 3",
+      "Phone": "380800500609",
+      "TypeOfWarehouse": "00000000-0000-0000-0000-000000000000",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Number": "1",
+      "CityRef": "00000000-0000-0000-0000-000000000000",
+      "CityDescription": "Заболотів (Снятинський р-н)",
+      "CityDescriptionRu": "Заболотов (Снятинский р-н)",
+      "SettlementRef": "00000000-0000-0000-0000-000000000000",
+      "SettlementDescription": "Заболотів",
+      "SettlementAreaDescription": "Івано-Франківська область",
+      "SettlementRegionsDescription": "Снятинський р-н",
+      "SettlementTypeDescription": "селище міського типу",
+      "SettlementTypeDescriptionRu": "поселок городского типа",
+      "Longitude": "25.284086000000000",
+      "Latitude": "48.467503000000000",
+      "PostFinance": "1",
+      "BicycleParking": "0",
+      "PaymentAccess": "1",
+      "POSTerminal": "1",
+      "InternationalShipping": "1",
+      "SelfServiceWorkplacesCount": "0",
+      "TotalMaxWeightAllowed": "0",
+      "PlaceMaxWeightAllowed": "1000",
+      "SendingLimitationsOnDimensions": {
+        "Width": 170,
+        "Height": 170,
+        "Length": 300
+      },
+      "ReceivingLimitationsOnDimensions": {
+        "Width": 170,
+        "Height": 170,
+        "Length": 300
+      },
+      "Reception": {
+        "Monday": "16:45-18:00",
+        "Tuesday": "16:45-18:00",
+        "Wednesday": "16:45-18:00",
+        "Thursday": "16:45-18:00",
+        "Friday": "16:45-18:00",
+        "Saturday": "16:30-17:00",
+        "Sunday": "10:00-15:00"
+      },
+      "Delivery": {
+        "Monday": "08:00-12:00",
+        "Tuesday": "08:00-12:00",
+        "Wednesday": "08:00-12:00",
+        "Thursday": "08:00-12:00",
+        "Friday": "08:00-12:00",
+        "Saturday": "09:00-12:00",
+        "Sunday": "09:00-14:30"
+      },
+      "Schedule": {
+        "Monday": "09:00-19:00",
+        "Tuesday": "09:00-19:00",
+        "Wednesday": "09:00-19:00",
+        "Thursday": "09:00-19:00",
+        "Friday": "09:00-19:00",
+        "Saturday": "09:00-18:00",
+        "Sunday": "10:00-18:00"
+      },
+      "DistrictCode": "Ск За",
+      "WarehouseStatus": "Working",
+      "WarehouseStatusDate": "4/2/21 0:00",
+      "CategoryOfWarehouse": "Branch",
+      "RegionCity": "ЧЕРНІВЦІ",
+      "WarehouseForAgent": "1",
+      "MaxDeclaredCost": "0",
+      "DenyToSelect": "1",
+      "PostMachineType": "",
+      "PostalCodeUA": "15001",
+      "OnlyReceivingParcel": "0",
+      "WarehouseIndex": "101/102"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

@@ -1,0 +1,19 @@
+{
+  "PaymentMethod": "Cash",
+  "NoteAddressRecipient": "Додаткова інформація про адресу отримувача",
+  "Recipient": "00000000-0000-0000-0000-000000000000",
+  "CityRecipient": "db5c8892-391c-11dd-90d9-001a92567626",
+  "Note": "Додаткова інформація про замовлення",
+  "Customer": "Sender",
+  "Ref": "00000000-0000-0000-0000-000000000000",
+  "RecipientContactName": "Іванов Іван Іванович",
+  "IntDocNumber": "20450123456789",
+  "RecipientWarehouse": "aaada586-b04f-11e8-ad0d-005056b24375",
+  "RecipientPhone": "380991234567",
+  "SettlementRecipient": "e71d006d-4b33-11e4-ab6d-005056801329",
+  "BuildingNumber": "15",
+  "RecipientSettlementStreet": "09b447c0-6470-11ea-a970-b8830365ade4",
+  "ServiceType": "WarehouseWarehouse",
+  "PayerType": "Sender",
+  "OrderType": "orderRedirecting"
+}

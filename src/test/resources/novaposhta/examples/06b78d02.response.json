@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data": [
+    {
+      "NonCash": false,
+      "City": "Київ",
+      "Counterparty": "ТОВ Компанія",
+      "Address": "м. Київ, площа Харківська, 10",
+      "Phone": "380670000000",
+      "Ref": "00000000-0000-0000-0000-000000000001",
+      "ContactPerson": "Іванов Іван Іванович",
+      "Type": "CustomReturnAddress"
+    },
+    {
+      "NonCash": false,
+      "City": "Київ",
+      "Counterparty": "ТОВ Компанія",
+      "ContactPerson": "Петров Петро Петрович",
+      "Address": "м. Київ, Відділення №1: вул. Пирогівський шлях, 135",
+      "Phone": "380500000000",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Type": "OrderReturn"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [
+    {
+      "PayerTypeDefault": "Recipient",
+      "Number": "102-77771370"
+    }
+  ],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

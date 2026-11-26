@@ -1,0 +1,59 @@
+{
+  "success": true,
+  "data": [
+    {
+      "AddressDocumentDelivery": true,
+      "AfterpaymentType": true,
+      "BackwardDeliverySubtypesDocuments": true,
+      "BlockInternationalSenderLKK": true,
+      "CalculationByFactualWeight": true,
+      "CanAfterpaymentOnGoodsCost": true,
+      "CanCreditDocuments": true,
+      "CanEWTransporter": true,
+      "CanForwardingService": true,
+      "CanNonCashPayment": true,
+      "CanPayTheThirdPerson": true,
+      "CanSameDayDelivery": true,
+      "CanSameDayDeliveryStandart": true,
+      "CanSentFromPostomat": true,
+      "CanSignedDocuments": true,
+      "CarCall": true,
+      "CreditDocuments": true,
+      "CustomerReturn": true,
+      "DayCustomerReturn": true,
+      "DebtorParams": [
+        {
+          "AgreementId": "56897",
+          "PaymTermId": "2банківськідні",
+          "PastDueDebts": "0.00",
+          "BlockedStatus": "2"
+        }
+      ],
+      "DeliveryByHand": true,
+      "DescentFromFloor": true,
+      "FillingWarranty": true,
+      "HaveMoneyWallets": true,
+      "HideDeliveryCost": true,
+      "InternationalDelivery": true,
+      "InternationalDeliveryServiceType": true,
+      "LoyaltyProgram": true,
+      "MainCounterparty": true,
+      "PickupService": true,
+      "PrintMarkingAllowedTypes": {
+        "vbf": 123
+      },
+      "SecurePayment": true,
+      "Services": true,
+      "ShowDeliveryByHand": true,
+      "SignedDocuments": true,
+      "TransferPricingConditions": true
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

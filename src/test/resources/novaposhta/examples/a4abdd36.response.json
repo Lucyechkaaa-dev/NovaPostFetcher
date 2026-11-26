@@ -1,0 +1,24 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Number": "105-00003134",
+      "DateTime": "2015-03-20T13:45:19+00:00",
+      "Count": "2",
+      "CitySenderRef": "00000000-0000-0000-0000-000000000000",
+      "CitySender": "Київ",
+      "SenderAddressRef": "00000000-0000-0000-0000-000000000000",
+      "SenderAddress": "м. Київ, Відділення №87 (до 30 кг), вул. Княжий Затон, 14б",
+      "SenderRef": "00000000-0000-0000-0000-000000000000",
+      "Sender": "CBS-369138"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

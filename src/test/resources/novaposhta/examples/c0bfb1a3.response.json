@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Description": "Вінницька",
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "AreasCenter": "00000000-0000-0000-0000-000000000000",
+      "RegionType": "область"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

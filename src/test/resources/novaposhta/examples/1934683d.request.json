@@ -1,0 +1,17 @@
+{
+  "OrderRef": "00000000-0000-0000-0000-000000000000",
+  "AddressDescription": "просп. М. Бажана, 24/1 (м. Позняки)",
+  "RecipientName": "Іванов Іван Іванович",
+  "PhoneSender": "380675387254",
+  "StreetDescription": "просп. М. Бажана",
+  "PhoneRecipient": "380991234567",
+  "BuildingNumber": "24",
+  "CityRecipient": "00000000-0000-0000-0000-000000000000",
+  "DocumentWeight": "1",
+  "SettlementRecipient": "00000000-0000-0000-0000-000000000000",
+  "SettlementType": "00000000-0000-0000-0000-000000000000",
+  "PayerType": "Sender",
+  "PaymentMethod": "Cash",
+  "CounterpartyRecipientRef": "00000000-0000-0000-0000-000000000000",
+  "WarehouseRef": "00000000-0000-0000-0000-000000000000"
+}

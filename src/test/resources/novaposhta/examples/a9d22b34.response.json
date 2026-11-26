@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "data": [{
+    "Ref": "00000000-0000-0000-0000-000000000000",
+    "DateTime": "25.11.2026",
+    "PreferredDeliveryDate": "26.11.2026",
+    "RecipientDateTime": "27.11.2026",
+    "EWDateCreated": "25.11.2026",
+    "Weight": "5",
+    "SeatsAmount": "2",
+    "IntDocNumber": "20400030200931",
+    "Cost": "15000",
+    "CitySender": "00000000-0000-0000-0000-000000000000",
+    "CityRecipient": "00000000-0000-0000-0000-000000000000",
+    "SenderAddress": "00000000-0000-0000-0000-000000000000",
+    "RecipientAddress": "00000000-0000-0000-0000-000000000000",
+    "CostOnSite": "45",
+    "PayerType": "Sender",
+    "PaymentMethod": "Cash",
+    "AfterpaymentOnGoodsCost": "500",
+    "PackingNumber": "123456",
+    "RejectionReason": "Опис причини переадресування",
+    "StateId": "41",
+    "StateName": "Відправлення в місті Києві",
+    "ScanSheetNumber": ""
+  }],
+  "errors": [], "warnings": [], "info": [], "messageCodes": [], "errorCodes": [], "warningCodes": [], "infoCodes": []
+}

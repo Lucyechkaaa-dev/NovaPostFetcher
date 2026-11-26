@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Number": "CityPickingTimeInterval3",
+      "Start": "08:00",
+      "End": "17:00",
+      "BoundaryTime": "14:50"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

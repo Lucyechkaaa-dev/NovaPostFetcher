@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "Sender",
+      "Description": "Відправник"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

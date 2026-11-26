@@ -1,0 +1,18 @@
+{
+  "success": true,
+  "data": [
+    {
+      "Ref": "00000000-0000-0000-0000-000000000000",
+      "Description": "Палета від 1,5 м2 до 2 м2",
+      "DescriptionRu": "Паллета свыше 1,5 м2",
+      "Weight": "816.00"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}

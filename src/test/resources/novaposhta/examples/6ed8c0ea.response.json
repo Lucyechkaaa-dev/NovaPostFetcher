@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "data": [
+    {
+      "TimeIntervalDescription": "08:00 - 18:00",
+      "SenderDescription": "Р.Б",
+      "Status": "ReadyToDone",
+      "DateTime": "10.02.2025 16:53:15",
+      "FactualWeight": "0.00",
+      "ContactSenderDescription": "Іванова Алла Ігорівна",
+      "PreferredDeliveryDate": "11.02.2025",
+      "AggregatedOrderInfo": [
+        {
+          "ParcelsAmount": 1,
+          "ParcelsAmountByCargoType": {
+            "Documents": 1,
+            "Parcel": 0,
+            "Cargo": 0,
+            "Pallet": 0,
+            "TiresWheels": 0
+          },
+          "SeatsAmount": 1
+        }
+      ],
+      "AvailableActions": [
+        {
+          "CanCancel": true,
+          "CanEdit": false
+        }
+      ],
+      "SenderAddressDescription": "Київ, вул. Лісківська 555",
+      "ContactSenderPhone": "380600000000",
+      "StatusDescription": "Готово до виконання",
+      "SenderSettlementRef": "e718a680-4b33-11e4-ab6d-005056801329",
+      "Ref": "c1d8788a-e7be-11ef-b619-005056bdc0e9",
+      "TimeInterval": "CityPickingTimeInterval6",
+      "PlanedWeight": "13.00",
+      "Number": "102-00265830"
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "info": [],
+  "messageCodes": [],
+  "errorCodes": [],
+  "warningCodes": [],
+  "infoCodes": []
+}
