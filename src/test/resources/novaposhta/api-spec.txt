@@ -1,0 +1,316 @@
+# Nova Poshta API 2.0 contract spec.
+# Source of truth: https://developers.novaposhta.ua/documentation (method and field NAMES only; snapshot 2026-11-25, re-checked against a full
+# capture of all 88 pages on 2026-11-26: every name in every parameter table is covered, see src/test/resources/novaposhta/examples/README.md).
+# Consumed by tools/ModelGenerator.java (generates records + facades) and by ApiSpecConformanceTest (checks the code against the docs).
+#
+#   @api <ApiClass> <docSectionUuid> <defaultNpModel>     starts a facade (com.novapost.client.api.<ApiClass>)
+#   @pkg <package>                                         package for classes given by simple name
+#   class request|response <Class> : <tokens>              class that is not bound to a method
+#   M <Model>/<method> java=<facadeMethod> [model=<NpModel>] doc=<pageId8>[,<pageId8>...]
+#     req|res <Class>[,<Class>...] : <tokens>             "-" = none. Class: Simple (generated in @pkg) | a.b.C (generated) | =a.b.C (hand-written)
+#   token = Name[=javaName][:type][~default]   (+Name = real but undocumented field).   types: bool json strs int long dbl or any Java type
+#   note <text>                                            (under an M line) a rule from the docs prose, copied into the facade method's Javadoc
+#   extra <Class>                                          the generated answer record keeps undeclared fields in a Map (@JsonAnySetter)
+#
+# The conformance test requires every documented name to exist in the listed classes; doc= page ids are checked for completeness (85 pages / 68 methods).
+# The two request lists that an earlier capture had cut off (AdditionalService pages 1934683d and c61d3597) are complete now: 15 and 17 names, as in the tables.
+
+# ---------------------------------------------------------------- Address
+@api AddressApi a0cf0f5f-8512-11ec-8ced-005056b2dbe1 ADDRESS
+@pkg com.novapost.model.address
+
+M AddressGeneral/searchSettlements java=searchSettlements model=ADDRESS doc=a0eb83ab
+  req =com.novapost.model.SearchSettlementFilter : CityName Limit Page
+  res =com.novapost.model.SearchSettlementItem,=com.novapost.model.SearchSettlementItem$SearchSettlementAddress : StreetsAvailability RegionTypesCode AddressDeliveryAllowed TotalCount Addresses Warehouses MainDescription Area Region SettlementTypeCode Ref DeliveryCity Present RegionTypes ParentRegionCode ParentRegionTypes
+M AddressGeneral/searchSettlementStreets java=searchSettlementStreets model=ADDRESS doc=a1329635
+  req =com.novapost.model.SettlementStreetFilter : StreetName SettlementRef Limit
+  res =com.novapost.model.SettlementStreetSearchResult,=com.novapost.model.SettlementStreet : TotalCount Addresses SettlementRef SettlementStreetRef SettlementStreetDescription Present StreetsType StreetsTypeDescription Location SettlementStreetDescriptionRu
+M AddressGeneral/save java=saveCounterpartyAddress model=ADDRESS doc=a155d0d9
+  req CounterpartyAddressSaveRequest : CounterpartyRef StreetRef BuildingNumber Flat Note
+  res CounterpartyAddressResult : Ref Description
+M AddressGeneral/delete java=deleteCounterpartyAddress model=ADDRESS doc=a177069a
+  req com.novapost.model.common.RefRequest : Ref
+  res com.novapost.model.common.RefResult : Ref
+M AddressGeneral/update java=updateCounterpartyAddress model=ADDRESS doc=a19ba934
+  req CounterpartyAddressUpdateRequest : CounterpartyRef StreetRef BuildingNumber Flat Note Ref
+  res CounterpartyAddressResult : Ref Description
+M AddressGeneral/getSettlements java=getSettlements model=ADDRESS_GENERAL doc=a1c42723
+  note Keep a copy of this directory on your side; the documentation recommends refreshing it once a month. FindByString searches in Ukrainian only.
+  req =com.novapost.model.SettlementFilter : AreaRef Ref RegionRef Page Warehouse:flag FindByString Limit
+  res =com.novapost.model.Settlement : Ref SettlementType Latitude:dec Longitude:dec Description DescriptionRu SettlementTypeDescription SettlementTypeDescriptionRu Region RegionsDescription RegionsDescriptionRu Area AreaDescription AreaDescriptionRu Index1 Index2 IndexCOATSU1 Delivery1:bool Delivery2:bool Delivery3:bool Delivery4:bool Delivery5:bool Delivery6:bool Delivery7:bool Warehouse:bool Conglomerates
+M AddressGeneral/getCities java=getCities model=ADDRESS doc=a1e6f0a7
+  note The Ref of a city is what CitySender / CityRecipient of a waybill need. The documentation recommends refreshing this directory daily.
+  req CityFilter : Ref Page:int FindByString Limit:int
+  res City : Description DescriptionRu Ref Delivery1:bool Delivery2:bool Delivery3:bool Delivery4:bool Delivery5:bool Delivery6:bool Delivery7:bool Area SettlementType IsBranch:bool PreventEntryNewStreetsUser:bool Conglomerates:json CityID:int SettlementTypeDescriptionRu SettlementTypeDescription
+M AddressGeneral/getAreas java=getAreas model=ADDRESS doc=a20ee6e4
+  req -
+  res Area : Ref AreasCenter DescriptionRu Description
+M AddressGeneral/getWarehouses java=getWarehouses model=ADDRESS_GENERAL doc=a2322f38
+  req =com.novapost.model.WarehouseFilter : FindByString CityName CityRef Page Limit Language TypeOfWarehouseRef WarehouseId +SettlementRef
+  res =com.novapost.model.Warehouse : SiteKey Description DescriptionRu ShortAddress ShortAddressRu Phone TypeOfWarehouse Ref Number CityRef CityDescription CityDescriptionRu SettlementRef SettlementDescription SettlementAreaDescription SettlementRegionsDescription SettlementTypeDescription SettlementTypeDescriptionRu Longitude:dec Latitude:dec PostFinance:bool BicycleParking:bool PaymentAccess:bool POSTerminal:bool InternationalShipping:bool SelfServiceWorkplacesCount:int TotalMaxWeightAllowed:dec PlaceMaxWeightAllowed:dec SendingLimitationsOnDimensions ReceivingLimitationsOnDimensions Reception Delivery Schedule DistrictCode WarehouseStatus WarehouseStatusDate:datetime CategoryOfWarehouse RegionCity WarehouseForAgent:bool MaxDeclaredCost:dec DenyToSelect:bool PostMachineType PostalCodeUA OnlyReceivingParcel:bool WarehouseIndex +Direct
+M AddressGeneral/getWarehouseTypes java=getWarehouseTypes model=ADDRESS_GENERAL doc=a2587b53
+  req -
+  res =com.novapost.model.WarehouseTypes : Ref Description DescriptionRu
+M AddressGeneral/getStreet java=getStreet model=ADDRESS doc=a27c20d7
+  req =com.novapost.model.StreetFilter : CityRef FindByString Page Limit
+  res =com.novapost.model.Street : Ref Description StreetsTypeRef StreetsType
+M AddressGeneral/getSettlementCountryRegion java=getSettlementCountryRegion model=ADDRESS_GENERAL doc=a98072f9
+  req SettlementCountryRegionRequest : AreaRef
+  res SettlementRegion : Ref AreasCenter Description RegionType
+M AddressGeneral/getSettlementAreas java=getSettlementAreas model=ADDRESS_GENERAL doc=c0bfb1a3
+  req SettlementAreaRequest : Ref
+  res SettlementArea : Description Ref AreasCenter RegionType
+
+# ---------------------------------------------------------------- Counterparty
+@api CounterpartyApi a28f4b04-8512-11ec-8ced-005056b2dbe1 COUNTERPARTY
+@pkg com.novapost.model.counterparty
+
+M CounterpartyGeneral/save java=save doc=0ae5dd75,b0fdf818,bc3c44c7
+  req CounterpartySaveRequest : FirstName MiddleName LastName Phone Email CounterpartyType CounterpartyProperty EDRPOU CityRef
+  res Counterparty : Ref Description FirstName MiddleName LastName Counterparty OwnershipForm OwnershipFormDescription EDRPOU CounterpartyType ContactPerson:json City OwnershipFormRef
+M CounterpartyGeneral/update java=update doc=a2c3c708
+  req CounterpartyUpdateRequest : Ref CityRef FirstName MiddleName LastName Phone Email CounterpartyType CounterpartyProperty
+  res Counterparty : Ref Description FirstName MiddleName LastName Counterparty OwnershipForm OwnershipFormDescription EDRPOU CounterpartyType ContactPerson:json
+M CounterpartyGeneral/delete java=delete doc=a2eb27e8
+  note Deletes a recipient counterparty only; a sender counterparty has to be deleted through support.
+  req com.novapost.model.common.RefRequest : Ref
+  res com.novapost.model.common.RefResult : Ref
+M CounterpartyGeneral/getCounterpartyAddresses java=getCounterpartyAddresses doc=a30dbb7c
+  req CounterpartyAddressesRequest : Ref CounterpartyProperty
+  res CounterpartyAddress : Ref Description
+M CounterpartyGeneral/getCounterpartyOptions java=getCounterpartyOptions doc=a332efbf
+  req com.novapost.model.common.RefRequest : Ref
+  res CounterpartyOptions : AddressDocumentDelivery:bool AfterpaymentType:bool BackwardDeliverySubtypesDocuments:bool BlockInternationalSenderLKK:bool CalculationByFactualWeight:bool CanAfterpaymentOnGoodsCost:bool CanCreditDocuments:bool CanEWTransporter:bool CanForwardingService:bool CanNonCashPayment:bool CanPayTheThirdPerson:bool CanSameDayDelivery:bool CanSameDayDeliveryStandart:bool CanSentFromPostomat:bool CanSignedDocuments:bool CarCall:bool CreditDocuments:bool CustomerReturn:bool DayCustomerReturn:bool DebtorParams:json DeliveryByHand:bool DescentFromFloor:bool FillingWarranty:bool HaveMoneyWallets:bool HideDeliveryCost:bool InternationalDelivery:bool InternationalDeliveryServiceType:bool LoyaltyProgram:bool MainCounterparty:bool PickupService:bool PrintMarkingAllowedTypes:json SecurePayment:bool Services:bool ShowDeliveryByHand:bool SignedDocuments:bool TransferPricingConditions:bool
+M CounterpartyGeneral/getCounterpartyContactPersons java=getCounterpartyContactPersons doc=a3575a67
+  note At most 100 records per page. The documentation recommends refreshing this directory once a day.
+  req CounterpartyContactPersonsRequest : Ref Page:int
+  res com.novapost.model.contact.ContactPerson : Description Ref Phones Email LastName FirstName MiddleName
+M CounterpartyGeneral/getCounterparties java=getCounterparties doc=a37a06df
+  note At most 100 records per page. The documentation recommends refreshing this directory once a day.
+  req CounterpartyListRequest : CounterpartyProperty Page:int
+  res Counterparty : Description Ref City Counterparty FirstName LastName MiddleName OwnershipFormRef OwnershipFormDescription EDRPOU CounterpartyType
+
+# ---------------------------------------------------------------- ContactPerson
+@api ContactPersonApi a39040c4-8512-11ec-8ced-005056b2dbe1 CONTACT_PERSON
+@pkg com.novapost.model.contact
+
+M ContactPersonGeneral/save java=save doc=a3a25bda
+  req ContactPersonSaveRequest : CounterpartyRef FirstName LastName MiddleName Phone
+  res ContactPerson : Ref Description LastName FirstName MiddleName Phones Email
+M ContactPersonGeneral/update java=update doc=a3c5a577
+  note A contact person can be edited only until a waybill has been created with this contact person.
+  req ContactPersonUpdateRequest : CounterpartyRef Ref FirstName LastName MiddleName Phone
+  res ContactPerson : Ref Description LastName FirstName MiddleName Phones Email
+M ContactPersonGeneral/delete java=delete doc=a3ea91c8
+  req com.novapost.model.common.RefRequest : Ref
+  res com.novapost.model.common.RefResult : Ref
+
+# ---------------------------------------------------------------- ScanSheet
+@api ScanSheetApi a46fc4f4-8512-11ec-8ced-005056b2dbe1 SCAN_SHEET
+@pkg com.novapost.model.scansheet
+
+M ScanSheetGeneral/insertDocuments java=insertDocuments doc=a482293c
+  req ScanSheetInsertRequest : DocumentRefs:strs Ref Date:date
+  res ScanSheetInsertResult : Description Ref Number Date:date Errors:json Warnings:json Data:json Success:json
+M ScanSheetGeneral/getScanSheet java=getScanSheet doc=a4abdd36
+  req ScanSheetRequest : Ref CounterpartyRef
+  res ScanSheet : Ref Number DateTime:datetime Count:int CitySenderRef CitySender SenderAddressRef SenderAddress SenderRef Sender
+M ScanSheetGeneral/getScanSheetList java=getScanSheetList doc=a4d93a89
+  req -
+  res ScanSheetListItem : Ref Number DateTime:datetime Printed:bool
+M ScanSheetGeneral/deleteScanSheet java=deleteScanSheet doc=a50e049b
+  req ScanSheetDeleteRequest : ScanSheetRefs:strs
+  res ScanSheetDeleteResult : Ref Number Error
+M ScanSheetGeneral/removeDocuments java=removeDocuments doc=a53dea8a
+  req ScanSheetRemoveDocumentsRequest : DocumentRefs:strs Ref
+  res ScanSheetRemoveDocumentsResult : DocumentRefs:json
+
+# ---------------------------------------------------------------- Common
+@api CommonApi a55b2c64-8512-11ec-8ced-005056b2dbe1 COMMON
+@pkg com.novapost.model.common
+
+M CommonGeneral/getTimeIntervals java=getTimeIntervals doc=a56d5c1c
+  req TimeIntervalRequest : RecipientCityRef DateTime:date
+  res TimeInterval : Number Start:time End:time
+M CommonGeneral/getCargoTypes java=getCargoTypes doc=a5912a1e
+  req -
+  res RefDescription : Ref Description
+M CommonGeneral/getBackwardDeliveryCargoTypes java=getBackwardDeliveryCargoTypes doc=a5b46873
+  req -
+  res RefDescription : Ref Description
+M CommonGeneral/getPalletsList java=getPalletsList doc=a5dd575e
+  req -
+  res Pallet : Ref Description DescriptionRu Weight:dec
+M CommonGeneral/getTypesOfPayersForRedelivery java=getTypesOfPayersForRedelivery doc=a6247f2f
+  req -
+  res RefDescription : Ref Description
+M CommonGeneral/getPackList java=getPackList doc=a6492db4
+  note The portal prints the parameter names glued to their type (Lengthstring, Widthstring, ...); the names used here are the evident intended ones. Refresh this directory monthly.
+  req PackListRequest : Length:dec Width:dec Height:dec VolumetricWeight:dec TypeOfPacking
+  res PackItem : Ref Description DescriptionRu Length:dec Width:dec Height:dec VolumetricWeight:dec TypeOfPacking
+M CommonGeneral/getTiresWheelsList java=getTiresWheelsList doc=a66fada0
+  req -
+  res TireWheel : Ref Description DescriptionRu Weight:dec DescriptionType
+M CommonGeneral/getCargoDescriptionList java=getCargoDescriptionList doc=a697db47
+  note At most 500 records per page (Pager.CARGO_DESCRIPTIONS).
+  req CargoDescriptionRequest : FindByString Page:int
+  res CargoDescription : Ref Description DescriptionRu
+M CommonGeneral/getMessageCodeText java=getMessageCodeText doc=a6bce5a1
+  req -
+  res MessageCodeText : MessageCode MessageText MessageDescriptionRU MessageDescriptionUA
+M CommonGeneral/getServiceTypes java=getServiceTypes doc=a6e189f7
+  req -
+  res RefDescription : Ref Description
+M CommonGeneral/getOwnershipFormsList java=getOwnershipFormsList doc=a754ff0d
+  req -
+  res OwnershipForm : Ref Description FullName
+M CommonGeneral/getPackListSpecial java=getPackListSpecial model=COMMON_GENERAL doc=affdad3e
+  req PackListSpecialRequest : Length:dec PackForSale:flag Height:dec CargoType VolumetricWeight:dec Width:dec New=isNew:flag SendingFrom
+  res PackListSpecialResult : Filtered:json
+M CommonGeneral/getPickupTimeIntervals java=getPickupTimeIntervals model=COMMON_GENERAL doc=c4389a2c
+  req PickupTimeIntervalRequest : SenderCityRef DateTime:date
+  res PickupTimeInterval : Number Start:time End:time BoundaryTime:time
+
+# ---------------------------------------------------------------- AdditionalService (redirecting / return / change of EW data)
+@api AdditionalServiceApi a7682c1a-8512-11ec-8ced-005056b2dbe1 ADDITIONAL_SERVICE
+@pkg com.novapost.model.service
+
+M AdditionalServiceGeneral/checkPossibilityForRedirecting java=checkRedirectingPossibility doc=a8d29fc2
+  req RedirectingPossibilityRequest : Number
+  res RedirectingPossibility : Ref Number PayerType PaymentMethod WarehouseRef WarehouseDescription AddressDescription StreetDescription BuildingNumber CityRecipient CityRecipientDescription SettlementRecipient SettlementRecipientDescription SettlementType CounterpartyRecipientRef CounterpartyRecipientDescription RecipientName PhoneSender PhoneRecipient DocumentWeight:dec
+M AdditionalServiceGeneral/save java=createRedirecting doc=98acb0f6
+  req RedirectingOrderRequest : IntDocNumber PaymentMethod Note OrderType~orderRedirecting Recipient RecipientContactName RecipientPhone PayerType Customer ServiceType RecipientSettlement RecipientSettlementStreet BuildingNumber NoteAddressRecipient RecipientWarehouse
+  res ServiceOrderResult : Number Ref
+M AdditionalServiceGeneral/checkPossibilityForRedirecting java=checkRedirectingEditPossibility doc=1934683d
+  req RedirectingEditCheckRequest : OrderRef AddressDescription RecipientName PhoneSender StreetDescription PhoneRecipient BuildingNumber CityRecipient DocumentWeight:dec SettlementRecipient SettlementType PayerType PaymentMethod CounterpartyRecipientRef WarehouseRef
+  res RedirectingEditCheck : PhoneSender BuildingNumber PhoneRecipient CityRecipient DocumentWeight:dec Ref CityRecipientDescription Number SettlementRecipient SettlementRecipientDescription PayerType SettlementType PaymentMethod CounterpartyRecipientRef WarehouseRef CounterpartyRecipientDescription WarehouseDescription AddressDescription RecipientName StreetDescription
+M AdditionalServiceGeneral/update java=updateRedirecting doc=c61d3597
+  req RedirectingUpdateRequest : PaymentMethod NoteAddressRecipient Recipient CityRecipient Note Customer Ref RecipientContactName IntDocNumber RecipientWarehouse RecipientPhone SettlementRecipient BuildingNumber RecipientSettlementStreet ServiceType PayerType OrderType~orderRedirecting
+  res RedirectingUpdateResult : SettlementType BuildingNumber PhoneSender WarehouseDescription Number PhoneRecipient PayerType DocumentWeight:dec SettlementRecipient NoteAddressRecipient PaymentMethod InternationalDeliveryType CityRecipient ServiceType SettlementRecipientDescription EdrpouRecipient AddressDescription CounterpartyRecipientRef RecipientSettlementStreet Ref WarehouseRef CounterpartyRecipientDescription CityRecipientDescription StreetDescription RecipientName
+M AdditionalServiceGeneral/getRedirectionOrdersList java=getRedirectingOrders doc=a8faa2e6
+  req ServiceOrderListRequest : Number Ref BeginDate:date EndDate:date Page:int Limit:int
+  res RedirectingOrder : OrderRef OrderNumber DateTime:datetime DocumentNumber Note CityRecipient RecipientAddress CounterpartyRecipient RecipientName PhoneRecipient PayerType DeliveryCost:dec EstimatedDeliveryDate:date ExpressWaybillNumber ExpressWaybillStatus
+M AdditionalServiceGeneral/save java=calculateRedirecting doc=db0e1b90
+  req RedirectingCalculateRequest : RecipientSettlement Recipient RecipientSettlementStreet RecipientWarehouse BuildingNumber NoteAddressRecipient Customer RecipientContactName RecipientPhone IntDocNumber PaymentMethod PayerType Note OrderType~orderRedirecting ServiceType
+  res ServicePricing : Pricing:json ScheduledDeliveryDate:datetime
+M AdditionalServiceGeneral/delete java=deleteOrder doc=a85bb34b
+  req com.novapost.model.common.RefRequest : Ref
+  res ServiceOrderDeleteResult : Number
+M AdditionalServiceGeneral/CheckPossibilityCreateReturn java=checkReturnPossibility doc=a778f519
+  req ReturnPossibilityRequest : Number
+  res ReturnPossibility : NonCash:bool City Counterparty ContactPerson Address Phone Ref
+M AdditionalServiceGeneral/save java=createReturn doc=a7fb4a3a
+  req ReturnOrderRequest : BuildingNumber NoteAddressRecipient RecipientSettlement RecipientWarehouse IntDocNumber PaymentMethod Reason SubtypeReason Note OrderType~orderCargoReturn ReturnAddressRef RecipientSettlementStreet
+  res ServiceOrderResult : Number Ref
+M AdditionalServiceGeneral/CheckPossibilityCreateReturn java=checkReturnEditPossibility doc=06b78d02
+  note The parameter table of the response is a placeholder in the documentation ("NoName"); the fields below are those of the documented example.
+  req ReturnEditCheckRequest : Ref Address
+  res ReturnEditCheck : NonCash:bool City Counterparty ContactPerson Address Phone Ref Type
+M AdditionalServiceGeneral/update java=updateReturn doc=2c81f3bc
+  req ReturnOrderUpdateRequest : Ref OnlyGetPricing:bool RecipientSettlement RecipientWarehouse IntDocNumber RecipientSettlementStreet PaymentMethod BuildingNumber OrderType~orderCargoReturn NoteAddressRecipient Reason SubtypeReason
+  res ServicePricing : Pricing:json ScheduledDeliveryDate:datetime
+M AdditionalServiceGeneral/getReturnOrdersList java=getReturnOrders doc=a82d087c
+  req ServiceOrderListRequest : Number Ref BeginDate:date EndDate:date Page:int Limit:int
+  res ReturnOrder : OrderRef OrderNumber OrderStatus DocumentNumber CounterpartyRecipient ContactPersonRecipient AddressRecipient DeliveryCost:dec EstimatedDeliveryDate:datetime ExpressWaybillNumber ExpressWaybillStatus
+M AdditionalServiceGeneral/save java=calculateReturn doc=4ee79a8d
+  req ReturnCalculateRequest : Note OrderType~orderCargoReturn ReturnAddressRef IntDocNumber PaymentMethod Reason OnlyGetPricing:int~1 SubtypeReason
+  res ServicePricing : Pricing:json ScheduledDeliveryDate:datetime
+M AdditionalServiceGeneral/getReturnReasons java=getReturnReasons doc=a7a6bacb
+  req -
+  res ReturnReason : Ref Description
+M AdditionalServiceGeneral/getReturnReasonsSubtypes java=getReturnReasonSubtypes doc=a7cb69ee
+  req ReturnReasonSubtypesRequest : ReasonRef
+  res ReturnReasonSubtype : Ref Description ReasonRef
+M AdditionalServiceGeneral/getChangeEWOrdersList java=getChangeEwOrders doc=a8ad1dc7
+  req ChangeEwOrderListRequest : Number Ref BeginDate:date EndDate:date Page:int Limit:int
+  res ChangeEwOrder : OrderRef OrderNumber OrderStatus DocumentNumber DateTime:date BeforeChangeSenderCounterparty AfterChangeChangeSenderCounterparty Cost:dec BeforeChangeSenderPhone AfterChangeSenderPhone
+M AdditionalServiceGeneral/CheckPossibilityChangeEW java=checkChangeEwPossibility doc=a886b776
+  req ChangeEwPossibilityRequest : IntDocNumber
+  res ChangeEwPossibility : CanChangeSender:bool CanChangeRecipient:bool CanChangePayerTypeOrPaymentMethod:bool CanChangeBackwardDeliveryDocuments:bool CanChangeBackwardDeliveryMoney:bool CanChangeCash2Card:bool CanChangeBackwardDeliveryOther:bool CanChangeAfterpaymentType:bool CanChangeLiftingOnFloor:bool CanChangeLiftingOnFloorWithElevator:bool CanChangeFillingWarranty:bool SenderCounterparty ContactPersonSender SenderPhone RecipientCounterparty ContactPersonRecipient RecipientPhone PayerType PaymentMethod
+M AdditionalServiceGeneral/save java=changeEw doc=c09f1b02
+  req ChangeEwRequest : IntDocNumber PaymentMethod OrderType~orderChangeEW SenderContactName SenderPhone Recipient RecipientContactName RecipientPhone PayerType
+  res ServiceOrderResult : Number Ref
+
+# ---------------------------------------------------------------- CarCall (courier pickup)
+@api CarCallApi 96141693-eaae-11ef-84e0-48df37b921da CAR_CALL
+@pkg com.novapost.model.courier
+
+M CarCallGeneral/getOrdersListCourierCall java=getOrders doc=6ed8c0ea,97e2097b
+  req CourierCallFilter : StatusCode ContactSenderPhone DateTime:date Page:int Limit:int SenderRef Number PreferredDeliveryDate:date
+  res CourierCall : TimeIntervalDescription SenderDescription Status DateTime:datetime FactualWeight:dec ContactSenderDescription PreferredDeliveryDate:date AggregatedOrderInfo:json AvailableActions:json SenderAddressDescription ContactSenderPhone StatusDescription SenderSettlementRef Ref TimeInterval PlanedWeight:dec Number
+M CarCallGeneral/insertDocuments java=insertDocuments doc=730e80bc
+  req CourierCallDocumentsRequest : LinkedDocuments:strs Number
+  res CourierCallDocumentsResult : succeeded:json Barcode
+M CarCallGeneral/getAvailableOrdersList java=getAvailableOrders doc=d5efafc8
+  req AvailableCourierCallsRequest : Number
+  res AvailableCourierCall : Number Ref TimeIntervalDescription PreferredDeliveryDate:date SenderAddressDescription
+M CarCallGeneral/deleteCourierCall java=cancel doc=edfb5c7d
+  req com.novapost.model.common.RefRequest : Ref
+  res CourierCallCancelResult : Cost:dec Number
+M CarCallGeneral/updateCourierCall java=update doc=ee1ff6d3
+  req CourierCallUpdateRequest : Ref PreferredDeliveryDate:date PlanedWeight:dec TimeInterval
+  res CourierCallBarcode : Barcode
+M CarCallGeneral/removeDocuments java=removeDocuments doc=ee23f404
+  req CourierCallRemoveDocumentsRequest : LinkedDocuments:strs
+  res CourierCallRemoveResult : succeeded:json
+M CarCallGeneral/saveCourierCall java=create doc=ee2a2001
+  req CourierCallCreateRequest : ContactSenderRef PreferredDeliveryDate:date PlanedWeight:dec TimeInterval CounterpartySender AddressSenderRef
+  res CourierCallBarcode : Barcode
+
+# ---------------------------------------------------------------- InternetDocument
+@api InternetDocumentApi a90d323c-8512-11ec-8ced-005056b2dbe1 INTERNET_DOCUMENT
+@pkg com.novapost.model.document
+
+class request RedeliveryCalculate : CargoType Amount:dec
+class request CargoDetailItem : CargoDescription Amount:int
+
+# The two largest answers (124 and 107 fields) keep what the documentation does not list in a Map (@JsonAnySetter).
+extra InternetDocument
+
+M InternetDocumentGeneral/getDocumentPrice java=getDocumentPrice doc=a91f115b
+  req =com.novapost.model.DocumentPriceRequest : CitySender CityRecipient Weight:dec ServiceType Cost:dec CargoType SeatsAmount:int RedeliveryCalculate PackCount:int PackRef Amount:dec CargoDetails CargoDescription
+  res =com.novapost.model.DocumentPriceResponse : AssessedCost:dec Cost:dec CostRedelivery:dec TZoneInfo CostPack:dec
+M InternetDocumentGeneral/getDocumentDeliveryDate java=getDocumentDeliveryDate doc=a941c714
+  note The documentation says the waybill's services (backward delivery, daily delivery and others) must be given in the request as mandatory elements of the estimate, but it names no parameter for them: only DateTime, ServiceType, CitySender and CityRecipient are documented, and the go-novapost SDK declares the same four.
+  note If a service parameter turns out to be needed, send it through NovaPostClient.call(NpModel.INTERNET_DOCUMENT, "getDocumentDeliveryDate", aMap, JsonNode.class).
+  note DateTime is a plain date (dd.MM.yyyy) by default; the documentation's example sends date and time (yyyy-MM-dd HH:mm:ss), see DocumentDeliveryDateRequest.ofDateTime.
+  req =com.novapost.model.DocumentDeliveryDateRequest : DateTime ServiceType CitySender CityRecipient
+  res =com.novapost.model.DocumentDeliveryDateResponse : DeliveryDate
+M InternetDocumentGeneral/save java=save doc=a965630e,0227072e,3fdc36f1,751067b8,a19ced79,c7c8aaf5,df942798,f74a0918
+  note DateTime (the send date, dd.MM.yyyy) may not exceed today by more than 3 months; a larger value is cut back to the maximum, the request still succeeds and the answer carries a warning.
+  note A waybill created through the API appears in the waybill list of the personal cabinet.
+  req =com.novapost.model.InternetDocumentSaveRequest : SenderWarehouseIndex RecipientWarehouseIndex PayerType PaymentMethod DateTime CargoType VolumeGeneral:dec Weight:dec ServiceType SeatsAmount:int Description Cost:dec CitySender Sender SenderAddress ContactSender SendersPhone CityRecipient Recipient RecipientAddress ContactRecipient RecipientsPhone OptionsSeat RedBoxBarcode NewAddress:flag RecipientCityName RecipientArea RecipientAreaRegions RecipientAddressName RecipientHouse RecipientFlat RecipientName RecipientType SettlementType OwnershipForm RecipientContactName EDRPOU BackwardDeliveryData RecipientAddressNote +AfterpaymentOnGoodsCost:dec
+  res =com.novapost.model.InternetDocumentResponse : Ref CostOnSite:dec EstimatedDeliveryDate IntDocNumber TypeDocument
+M InternetDocumentGeneral/update java=update doc=a98a4354
+  note Fill in all parameters; after the update only the ones that were modified are replaced.
+  req =com.novapost.model.InternetDocumentSaveRequest : Ref PayerType PaymentMethod DateTime CargoType VolumeGeneral:dec Weight:dec ServiceType SeatsAmount:int Description Cost:dec CitySender Sender SenderAddress ContactSender SendersPhone CityRecipient Recipient RecipientAddress ContactRecipient RecipientsPhone
+  res =com.novapost.model.InternetDocumentResponse : Ref CostOnSite:dec EstimatedDeliveryDate IntDocNumber TypeDocument
+M InternetDocumentGeneral/getDocumentList java=getDocumentList doc=a9d22b34
+  note GetFullList=1 returns the list for the period but at most 100 records (a system limit) and needs no Page; GetFullList=0 loads page by page without a limit on the total and requires Page.
+  note Without a date or a number the API returns the waybills of the current day. RedeliveryMoney=1 also returns the waybills with a backward delivery ("Грошовий переказ" / "Каса форпост").
+  req =com.novapost.model.InternetDocumentListFilter : DateTimeFrom DateTimeTo Page GetFullList DateTime IntDocNumber RedeliveryMoney +Limit
+  res =com.novapost.model.InternetDocumentListItem : Ref DateTime PreferredDeliveryDate:date RecipientDateTime:date EWDateCreated:date Weight:dec SeatsAmount:int IntDocNumber Cost:dec CitySender CityRecipient SenderAddress RecipientAddress CostOnSite:dec PayerType PaymentMethod AfterpaymentOnGoodsCost:dec PackingNumber RejectionReason StateId:int StateName ScanSheetNumber +SenderDescription +RecipientDescription +CityRecipientDescription +CitySenderDescription +EstimatedDeliveryDate
+M InternetDocumentGeneral/delete java=delete doc=a9f43ff1
+  req =com.novapost.model.InternetDocumentDeleteRequest : DocumentRefs
+  res =com.novapost.model.InternetDocumentDeleteResponse : Ref
+M InternetDocumentGeneral/generateReport java=generateReport doc=aa1b448f
+  req GenerateReportRequest : DocumentRefs:strs Type DateTime:date
+  res GenerateReportItem : Ref DateTime:date PreferredDeliveryDate:date Weight:dec SeatsAmount:int IntDocNumber Cost:dec CitySender CityRecipient State SenderAddress RecipientAddress CostOnSite:dec PayerType PaymentMethod AfterpaymentOnGoodsCost:dec PackingNumber
+M InternetDocumentGeneral/getEWTemplateList java=getEwTemplateList doc=dfc923e9
+  req EwTemplateListRequest : Page:int Limit:int PickupNumber State IsPickupTable:tbool
+  note The answer is the full view of a waybill (124 fields, see InternetDocument); the documentation labels this method "documents in a courier-call request".
+  res InternetDocument : PayerType ScanSheetRef BackwardDeliveryCargoType EWNumber Number RecipientCityRef OriginalGeoData:json RecipientContactPhone ElevatorRecipient:bool StateId:int DeliveryPharma:bool TimeIntervalString Note RecipientDateTime:datetime PaymentMethod RecipientPost ChangedDataEW:bool ScanSheetNumber IntDocNumber SaturdayDelivery:bool BackwardDeliverySum:dec RecipientStreetRef SecurePayment:bool ThirdPerson EWDateCreated:datetime CitySenderDescription bCardPaymentPayed:bool SenderDescription ScanSheetPrinted:bool RecipientContactPerson RecipientWarehouseRef ExpressWaybill SenderAddress ScheduledDeliveryDate:datetime RedBoxBarcode Forwarding RecipientsPhone AfterpaymentOnGoodsCost:dec RecipientDescription Cost:dec CityRecipientDescription StateName bCardPaymentCancelled:bool CarCall RecipientAddress DeliveryFrom InfoRegClientBarcodes WarehouseIllusha:bool AgeIdentification:bool IsTakeAttorney:bool Promocode CargoType LoyaltyCard MarketplacePartnerDescription NumberOfFloorsLifting:int DeliveryDateFrom:datetime EstimatedDeliveryDate:datetime ServiceType DeliveryByHand:bool DeliveryTo Sender StatePayId:int PackingNumber RecipientAddressDescription DateTime:datetime Ref RegionCode SettlementSender ForwardingCount:int BackwardDeliveryMoney:dec ContactSender Vip:bool LightReturn:bool Description MarketplacePartnerToken SameDayDelivery:bool StatePayName PreferredDeliveryDate:datetime ExpressPallet:bool CardPaymentRef StatementOfAcceptanceTransferCargoID CargoReturnRefusal RecipientCounterpartyType SenderContactPerson RejectionReason DateLastUpdatedStatus:datetime OwnershipForm LastModificationDate:datetime Recipient BackwardDeliveryData:json SettlementRecipient CitySender TimeInterval MoneyTransferPayerType WarehouseSender Weight:dec AviaDelivery:bool DateLastPrint:datetime ReceiptDate:datetime OnlineCreditStatus DeletionMark:bool SettlmentAddressData:json CityRecipient TimeIntervalRef WarehouseRecipient ContactRecipient AdditionalInformation EDRPOU FillingWarranty:bool AfterpaymentSum:dec Posted:bool SenderAddressDescription Redelivery:bool SeatsAmount:int CreateTime:datetime CostOnSite:dec LightReturnNumber Printed:bool Route CardMaskedNumber System SendersPhone RecipientFullName SaturdayDeliveryString
+
+# ---------------------------------------------------------------- Tracking
+@api TrackingApi a99d2f28-8512-11ec-8ced-005056b2dbe1 TRACKING_DOCUMENT
+@pkg com.novapost.model
+
+class request TrackingDocumentRef : DocumentNumber Phone
+
+M TrackingDocumentGeneral/getStatusDocuments java=getStatusDocuments doc=a9ae7bc9
+  note Authorized access (an API key is sent) returns the complete data, including the correct data of the sender and the recipient.
+  note Unauthorized access (no API key) returns limited data: the sender and recipient data is replaced with the data that belongs to the phone number in the request.
+  note One request may track up to 100 shipments (NovaPostClient splits longer lists). A phone number in Phone (recipient or sender) returns extended information.
+  note Dates in the answer come in several formats (dd-MM-yyyy HH:mm:ss, dd.MM.yyyy HH:mm:ss, yyyy-MM-dd HH:mm:ss); each is read into a LocalDateTime (a plain date becomes midnight; an empty value, 0000-00-00 and 0001-01-01 become null). The live API also returns Edit, PossibilityEUReturn, PossibilityLightReturn, PossibilityTermExtension and PossibilityTrusteeRecipient, which the documentation does not list (the documented name is spelled PossibilityTermExtensio).
+  req TrackingRequest : Documents:List<TrackingDocumentRef>
+  res TrackingStatus : PossibilityCreateReturn:bool PossibilityCreateRefusal:bool PossibilityChangeEW:bool PossibilityCreateRedirecting:bool Number Redelivery:bool RedeliverySum:dec RedeliveryNum RedeliveryPayer OwnerDocumentType LastCreatedOnTheBasisDocumentType LastCreatedOnTheBasisPayerType LastCreatedOnTheBasisDateTime:datetime LastTransactionStatusGM LastTransactionDateTimeGM:datetime LastAmountTransferGM:dec DateCreated:datetime DocumentWeight:dec FactualWeight:dec VolumeWeight:dec CheckWeight:dec CheckWeightMethod DocumentCost:dec CalculatedWeight:dec SumBeforeCheckWeight:dec PayerType RecipientFullName RecipientDateTime:datetime ScheduledDeliveryDate:datetime PaymentMethod CargoDescriptionString CargoType CitySender CityRecipient WarehouseRecipient CounterpartyType AfterpaymentOnGoodsCost:dec ServiceType UndeliveryReasonsSubtypeDescription WarehouseRecipientNumber LastCreatedOnTheBasisNumber PhoneRecipient RecipientFullNameEW WarehouseRecipientInternetAddressRef MarketplacePartnerToken ClientBarcode RecipientAddress CounterpartyRecipientDescription CounterpartySenderType DateScan:datetime PaymentStatus PaymentStatusDate:datetime AmountToPay:dec AmountPaid:dec Status StatusCode RefEW BackwardDeliverySubTypesActions BackwardDeliverySubTypesServices UndeliveryReasons DatePayedKeeping:datetime InternationalDeliveryType SeatsAmount:int CardMaskedNumber ExpressWaybillPaymentStatus ExpressWaybillAmountToPay:dec PhoneSender WarehouseSender TrackingUpdateDate:datetime DateReturnCargo:datetime DateMoving:datetime DateFirstDayStorage:datetime RefCityRecipient RefCitySender RefSettlementRecipient RefSettlementSender SenderAddress SenderFullNameEW AnnouncedPrice:dec AdditionalInformationEW ActualDeliveryDate:datetime PostomatV3CellReservationNumber OwnerDocumentNumber LastAmountReceivedCommissionGM:dec DeliveryTimeframe CreatedOnTheBasis UndeliveryReasonsDate:datetime RecipientWarehouseTypeRef WarehouseRecipientRef CategoryOfWarehouse WarehouseRecipientAddress WarehouseSenderInternetAddressRef WarehouseSenderAddress AviaDelivery:bool BarcodeRedBox CargoReturnRefusal DaysStorageCargo:int Packaging:json PartialReturnGoods:json SecurePayment:bool PossibilityChangeCash2Card:bool PossibilityChangeDeliveryIntervals:bool PossibilityTermExtensio:bool StorageAmount:dec StoragePrice:dec FreeShipping LoyaltyCardRecipient +CounterpartySenderDescription +PossibilityCreateClaim:bool +Edit:bool +PossibilityEUReturn:bool +PossibilityLightReturn:bool +PossibilityTermExtension:bool +PossibilityTrusteeRecipient:bool
